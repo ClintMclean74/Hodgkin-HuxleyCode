@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Hodgkin_Huxley" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/Hodgkin_Huxley" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="1000" />
+				<Compiler>
+					<Add option="-m32" />
+					<Add option="-g" />
+					<Add option="-DGLEW_STATIC" />
+					<Add directory="freeglut/include" />
+					<Add directory="glew-2.1.0/include" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add option="-static-libstdc++" />
+					<Add option="-static-libgcc" />
+					<Add option="-static" />
+					<Add option="-m32" />
+					<Add option="-lglew32s" />
+					<Add option="-lopengl32" />
+					<Add option="-lglu32" />
+					<Add option="-lfreeglut" />
+					<Add directory="glew-2.1.0/lib/Release/Win32" />
+					<Add directory="libs" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Hodgkin_Huxley" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="1000" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-m32" />
+					<Add option="-DGLEW_STATIC" />
+					<Add directory="freeglut/include" />
+					<Add directory="glew-2.1.0/include" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-static" />
+					<Add option="-m32" />
+					<Add option="-lglew32s" />
+					<Add option="-lopengl32" />
+					<Add option="-lglu32" />
+					<Add option="-lfreeglut" />
+					<Add directory="freeglut/lib" />
+					<Add directory="glew-2.1.0/lib/Release/Win32" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="include/Agent.h" />
+		<Unit filename="include/Agents.h" />
+		<Unit filename="include/ChemistryValues.h" />
+		<Unit filename="include/Color.h" />
+		<Unit filename="include/Environment.h" />
+		<Unit filename="include/FitnessGraph.h" />
+		<Unit filename="include/Food.h" />
+		<Unit filename="include/FoodForAgents.h" />
+		<Unit filename="include/Graph.h" />
+		<Unit filename="include/GraphicsUtilities.h" />
+		<Unit filename="include/HH_NeuralNetwork.h" />
+		<Unit filename="include/HH_NeuralNetworks.h" />
+		<Unit filename="include/HH_Neuron.h" />
+		<Unit filename="include/HH_Neurons.h" />
+		<Unit filename="include/MathUtilities.h" />
+		<Unit filename="include/NN_Connection.h" />
+		<Unit filename="include/NN_Connections.h" />
+		<Unit filename="include/RecurrentList.h" />
+		<Unit filename="include/ResultsBuffer.h" />
+		<Unit filename="include/Simulation.h" />
+		<Unit filename="include/Threading.h" />
+		<Unit filename="include/Vector.h" />
+		<Unit filename="include/pstdint.h" />
+		<Unit filename="src/Agent.cpp" />
+		<Unit filename="src/Agents.cpp" />
+		<Unit filename="src/ChemistryValues.cpp" />
+		<Unit filename="src/Color.cpp" />
+		<Unit filename="src/Environment.cpp" />
+		<Unit filename="src/FitnessGraph.cpp" />
+		<Unit filename="src/Food.cpp" />
+		<Unit filename="src/FoodForAgents.cpp" />
+		<Unit filename="src/Graph.cpp" />
+		<Unit filename="src/GraphicsUtilities.cpp" />
+		<Unit filename="src/HH_NeuralNetwork.cpp" />
+		<Unit filename="src/HH_NeuralNetworks.cpp" />
+		<Unit filename="src/HH_Neuron.cpp" />
+		<Unit filename="src/HH_Neurons.cpp" />
+		<Unit filename="src/MathUtilities.cpp" />
+		<Unit filename="src/NN_Connection.cpp" />
+		<Unit filename="src/NN_Connections.cpp" />
+		<Unit filename="src/RecurrentList.cpp" />
+		<Unit filename="src/ResultsBuffer.cpp" />
+		<Unit filename="src/Simulation.cpp" />
+		<Unit filename="src/Threading.cpp" />
+		<Unit filename="src/Vector.cpp" />
+		<Unit filename="src/main.cpp" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>
