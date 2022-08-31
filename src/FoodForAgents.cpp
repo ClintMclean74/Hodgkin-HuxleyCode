@@ -1,3 +1,22 @@
+/*
+ * Code System for the book "Solving Havana Syndrome and Biological Effects of RF
+ * Using the Hodgkin-Huxley Neuron Model"
+ * Copyright (C) 2022 by Clint Mclean <clint@mcleanresearchinstitute.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -12,29 +31,25 @@ FoodForAgents::FoodForAgents()
     if (Simulation::loadingData)
     {
         char textBuffer[255];
-        ////sprintf(textBuffer, "agent_food/agentsFood%i.txt", Simulation::simStartRealTime);
-        ////sprintf(textBuffer, "agents_3nn_30layers_9_30_37_37_00002_37_00004/agent_food/agentsFood641009531.txt");
-        ////sprintf(textBuffer, "agents_2nn_9_30_37_37_000001/agent_food/agentsFood816196296.txt");
-        sprintf(textBuffer, "agent_food/agentsFood910055203.txt", Simulation::simStartRealTime);
+        sprintf(textBuffer, "agent_food/agentsFood1738528546.txt");
         loadingFoodDataFileBinary.open(textBuffer, std::ifstream::binary);
 
-            // get length of file
-            loadingFoodDataFileBinary.seekg(0, loadingFoodDataFileBinary.end);
-            size_t length = static_cast<size_t>(loadingFoodDataFileBinary.tellg());
+        // get length of file
+        loadingFoodDataFileBinary.seekg(0, loadingFoodDataFileBinary.end);
+        size_t length = static_cast<size_t>(loadingFoodDataFileBinary.tellg());
 
-            loadingFoodDataFileBinary.seekg(0, loadingFoodDataFileBinary.beg);
+        loadingFoodDataFileBinary.seekg(0, loadingFoodDataFileBinary.beg);
 
-            // read whole contents of the file to a buffer at once
-            loadingFoodDataBuffer = new char[length];
-            loadingFoodDataFileBinary.read(loadingFoodDataBuffer, length);
-            loadingFoodDataFileBinary.close();
+        // read whole contents of the file to a buffer at once
+        loadingFoodDataBuffer = new char[length];
+        loadingFoodDataFileBinary.read(loadingFoodDataBuffer, length);
+        loadingFoodDataFileBinary.close();
     }
 
-    if (Simulation::savingData)
+    if (Simulation::saveAgentAllMembraneVoltagesTrace)
     {
         char textBuffer[255];
-        sprintf(textBuffer, "agent_food/agentsFood%i.txt", Simulation::simStartRealTime);
-        ////sprintf(textBuffer, "agent_food/agentsFood641009531.txt");
+        sprintf(textBuffer, "agent_food/agentsFood%lu.txt", Simulation::simStartRealTime);
 
         savingFoodDataFileBinary.open(textBuffer, std::ofstream::binary);
     }
@@ -54,17 +69,8 @@ FoodForAgents::FoodForAgents(uint32_t maxSize)
     FoodForAgents();
 }
 
-void FoodForAgents::ReGenerate()
+void FoodForAgents::GenerateAndSaveFoodPos()
 {
-    /*////for(uint32_t i=0; i<maxSize;i++)
-    {
-        if (foodArray[i] == NULL)
-            foodArray[i] = new Food();
-
-        foodArray[i]->pos.Set((double) rand() / RAND_MAX * Environment::rangeX, (double) rand() / RAND_MAX * Environment::rangeY, 0);
-    }*/
-
-
     Vector foodPos;
     double gridStartX;
     double gridStartY;
@@ -75,7 +81,7 @@ void FoodForAgents::ReGenerate()
         loadingFoodDataBufferOffset += sizeof(uint32_t);
     }
 
-    if (Simulation::savingData)
+    if (Simulation::saveAgentAllMembraneVoltagesTrace)
     {
         savingFoodDataFileBinary.write(reinterpret_cast<const char*> (&FoodForAgents::maxFoodPerAgent), sizeof(uint32_t));
         savingFoodDataFileBinary.flush();
@@ -102,7 +108,7 @@ void FoodForAgents::ReGenerate()
             }while(foodPos.Length()<Food::radius + Agent::radius);
         }
 
-        if (Simulation::savingData)
+        if (Simulation::saveAgentAllMembraneVoltagesTrace)
         {
             savingFoodDataFileBinary.write(reinterpret_cast<const char*> (&foodPos.x), sizeof(double));
             savingFoodDataFileBinary.write(reinterpret_cast<const char*> (&foodPos.y), sizeof(double));
@@ -116,10 +122,10 @@ void FoodForAgents::ReGenerate()
         {
             uint32_t foodIndex = i * Agents::count + j;
 
-            /*////if (foodArray[foodIndex] == NULL)
+            if (foodArray[foodIndex] == NULL)
                 foodArray[foodIndex] = new Food();
-            else*/
-                if (foodArray[foodIndex]->eaten)
+            else
+                 if (foodArray[foodIndex]->eaten)
                     foodArray[foodIndex]->eaten = false;
 
             foodArray[foodIndex]->agentIndex = j;
@@ -153,7 +159,6 @@ void FoodForAgents::Add(Food *food, int32_t agentIndex, Vector* pos)
     else
         foodArray[foodAmount] = food;
 
-
     if (agentIndex != -1)
     {
         foodArray[foodAmount]->agentIndex = agentIndex;
@@ -184,22 +189,17 @@ int32_t FoodForAgents::GetClosestFood(Vector pos, int32_t agentIndex)
     {
         if (foodArray[i] != NULL && foodArray[i]->eaten == false)
             if (foodArray[i]->agentIndex == agentIndex || agentIndex == -1)
-        {
-            //distance = (pos - foodArray[i]->pos).Length();
-            ////distance = MathUtilities::Distance(pos, foodArray[i]->pos);
-            distance = GetDistanceToFood(pos, i);
-
-            if (distance < minDistance || minDistance == -1)
             {
-                minDistance = distance;
+                distance = GetDistanceToFood(pos, i);
 
-                index = i;
+                if (distance < minDistance || minDistance == -1)
+                {
+                    minDistance = distance;
+
+                    index = i;
+                }
             }
-        }
     }
-
-    if (index != -1 && foodArray[index]->agentIndex != agentIndex)
-        int grc = 1;
 
     return index;
 }
@@ -253,10 +253,8 @@ FoodForAgents::~FoodForAgents()
     delete [] foodArray;
 }
 
-////uint32_t FoodForAgents::maxFoodPerAgent = 300;
 uint32_t FoodForAgents::maxFoodPerAgent = 10;
 uint32_t FoodForAgents::foodAmount = 0;
 uint32_t FoodForAgents::maxSize = 1000;
-double FoodForAgents::reinforcementValue = 10;
 Color* FoodForAgents::foodColor = new Color(0, 1, 0);
 Color* FoodForAgents::closestFoodColor = new Color(1.0, 1.0, 0.0);

@@ -1,7 +1,7 @@
 /*
- * SDRReradiation - Code system to detect biologically reradiated
- * electromagnetic energy from humans
- * Copyright (C) 2021 by Clint Mclean <clint@getfitnowapps.com>
+ * Code System for the book "Solving Havana Syndrome and Biological Effects of RF
+ * Using the Hodgkin-Huxley Neuron Model"
+ * Copyright (C) 2022 by Clint Mclean <clint@mcleanresearchinstitute.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 namespace MathUtilities
 {
-	double Round(double value, uint8_t decimalPoints = 0);
+	long double Round(long double value, uint8_t decimalPoints = 0);
 	double Limit(double value, double range);
 	double Distance(Vector pos1, Vector pos2);
 

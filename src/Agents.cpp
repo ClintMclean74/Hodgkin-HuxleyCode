@@ -1,3 +1,22 @@
+/*
+ * Code System for the book "Solving Havana Syndrome and Biological Effects of RF
+ * Using the Hodgkin-Huxley Neuron Model"
+ * Copyright (C) 2022 by Clint Mclean <clint@mcleanresearchinstitute.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <windows.h>
 #include "Environment.h"
 #include "Agents.h"
@@ -7,6 +26,8 @@
 
 Agents::Agents()
 {
+    Agents::count = 0;
+
     agents = new Agent_ptr[maxSize];
 
     for(uint32_t i=0; i<maxSize;i++)
@@ -39,11 +60,19 @@ double Agents::GetAvgFitness()
     return GetTotalFitness() / count;
 }
 
-void Agents::ReGenerate()
+void Agents::Reset()
 {
     for(uint32_t i=0; i<count;i++)
     {
-        agents[i]->ReGenerate();
+        agents[i]->Reset();
+    }
+}
+
+void Agents::RegenerateNNConnections()
+{
+    for(uint32_t i=0; i<count;i++)
+    {
+        agents[i]->RegenerateNNConnections();
     }
 }
 
@@ -66,20 +95,15 @@ void Agents::Add(Agent *agent)
     count++;
 }
 
-void Agents::AddNewNNHiddenLayerToAgents()
+void Agents::SetTargetTemperature(long double temperature, int32_t agentIndex)
 {
-    for(uint32_t i=0; i<count;i++)
+    if (agentIndex == -1)
     {
-        ((HH_NeuralNetwork *) agents[i]->neuralNetwork)->neurons->AddNNHiddenLayer(agents[i]->neuralNetwork);
+        for(uint32_t i=0; i<count;i++)
+            ((HH_NeuralNetwork *) agents[i]->neuralNetwork)->SetTargetTemperature(temperature);
     }
-}
-
-void Agents::SetTemperature(double temperature)
-{
-    for(uint32_t i=0; i<count;i++)
-    {
-        ((HH_NeuralNetwork *) agents[i]->neuralNetwork)->SetTemperature(temperature);
-    }
+    else
+        ((HH_NeuralNetwork *) agents[agentIndex]->neuralNetwork)->SetTargetTemperature(temperature);
 }
 
 void Agents::ActivateNeuronsFromFoodAngle()
@@ -91,24 +115,6 @@ void Agents::ActivateNeuronsFromFoodAngle()
         agents[i]->ActivateNeuronsFromFoodAngle();
     }
 }
-
-void Agents::LaunchProcessingThreads()
-{
-    agentProcessedStimIntervalSemaphores = new HANDLE[count];
-    agentProcessedGenerationSemaphores = new HANDLE[count];
-
-    for(uint32_t i=0; i<count;i++)
-    {
-        agentProcessedStimIntervalSemaphores[i] = agents[i]->agentProcessedStimIntervalSemaphore;
-        agentProcessedGenerationSemaphores[i] = agents[i]->agentProcessedGenerationSemaphore;
-    }
-
-    for(uint32_t i=0; i<count;i++)
-    {
-        agents[i]->LaunchProcessingThread();
-    }
-}
-
 
 void Agents::ProcessIfEating()
 {
@@ -122,27 +128,19 @@ void Agents::ProcessIfEating()
     }
 }
 
-void Agents::ReleaseStimIntervalSemaphores()
+uint32_t Agents::Process(uint32_t agentIndex)
 {
-    for(uint32_t i=0; i<count;i++)
-        ReleaseSemaphore(agents[i]->startNextStimIntervalSemaphore, 1, NULL);
-}
+    uint32_t status = 0;
 
-void Agents::ReleaseSemaphores()
-{
-    for(uint32_t i=0; i<count;i++)
-        ReleaseSemaphore(agents[i]->startNextGenerationSemaphore, 1, NULL);
-}
-
-void Agents::Process(uint32_t agentIndex)
-{
     if (agentIndex != maxSize)
-        agents[agentIndex]->Process();
+        agents[agentIndex]->Process(true);
     else
         for(uint32_t i=0; i<count;i++)
         {
-            agents[i]->Process();
+            status += agents[i]->Process(true);
         }
+
+    return status;
 }
 
 void Agents::Draw()
@@ -150,6 +148,23 @@ void Agents::Draw()
     for(uint32_t i=0; i<count;i++)
     {
         agents[i]->Draw();
+    }
+}
+
+void Agents::saveMembraneVoltagesTraceGraph()
+{
+    char textBuffer[255];
+    uint32_t time = GetTickCount();
+
+    FILE* agentNNMembraneVoltageTraceFile;
+    for(uint32_t i=0; i<count;i++)
+    {
+        sprintf(textBuffer, "%s/%s/agent%i_NNMembraneVoltageTrace%i.txt", Simulation::saveRootFolder, Simulation::saveMembraneVoltagesTraceGraphFolder, i, time);
+
+        agentNNMembraneVoltageTraceFile = fopen(textBuffer, "w");
+
+        ((HH_NeuralNetwork *) agents[i]->neuralNetwork)->saveMembraneVoltagesTraceGraph(agentNNMembraneVoltageTraceFile);
+        fclose(agentNNMembraneVoltageTraceFile);
     }
 }
 

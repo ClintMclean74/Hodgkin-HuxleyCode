@@ -1,3 +1,22 @@
+/*
+ * Code System for the book "Solving Havana Syndrome and Biological Effects of RF
+ * Using the Hodgkin-Huxley Neuron Model"
+ * Copyright (C) 2022 by Clint Mclean <clint@mcleanresearchinstitute.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef HH_Neuron_H
 #define HH_Neuron_H TRUE
 
@@ -5,7 +24,7 @@
 #include <cmath>
 
 #include "ChemistryValues.h"
-#include "Graph.h"
+#include "MembraneVoltageGraph.h"
 #include "NN_Connections.h"
 
 class ErrorDuration
@@ -17,8 +36,8 @@ class ErrorDuration
         double totalNeuronsInErrorCount = 0;
         double totalPatternErrorCount = 0;
 
-        double currentSignallingDurationStartTime = 0;
-        double totalSignallingDuration = 0;
+        double currentSignalingDurationStartTime = 0;
+        double totalSignalingDuration = 0;
 };
 
 class HH_Neuron
@@ -30,11 +49,15 @@ class HH_Neuron
     double minVoltage;
     double maxVoltage;
 
-    bool spike;
+    long double q10AdjustedRateScale = 1.0;
+
+    FILE* graphVoltagesFile;
 
     public:
         static double MEMBRANE_VOLTAGE_THRESHOLD;
         static double MINMAX_VOLTAGE;
+
+        bool spike = false;
 
         ErrorDuration errorsToRefNeuron;
 
@@ -50,111 +73,131 @@ class HH_Neuron
 
         double rndThresholdValue = 0.5;
 
-        double Na_Concentration_out;
-        double Na_Concentration_in;
+        long double Na_Concentration_out;
+        long double Na_Concentration_in;
 
-        double K_Concentration_out;
-        double K_Concentration_in;
+        long double K_Concentration_out;
+        long double K_Concentration_in;
 
-        double Cl_Concentration_out;
-        double Cl_Concentration_in;
+        long double Cl_Concentration_out;
+        long double Cl_Concentration_in;
 
-        double membrane_surface; // [um^2] surface area of the membrane
-        double membrane_capacitance_density; // [uF/cm^2] membrane capacitance density
-        double membrane_capacitance; // [uF] membrane capacitance
+        long double membrane_surface; // [um^2] surface area of the membrane
+        long double membrane_capacitance_density; // [uF/cm^2] membrane capacitance density
+        long double membrane_capacitance; // [uF] membrane capacitance
 
         //Equilibrum Voltages
-        double ENa;
-        double EK;
-        double EL;
+        long double ENa;
+        long double EK;
+        long double EL;
 
         //Maximum Conductances
-        double GNa_Max; //Na conductance [mS]
-        double GK_Max; //K conductance [mS]
-        double GL_Max; //Leak conductance [mS]
+        long double GNa_Max; //Na conductance [mS]
+        long double GK_Max; //K conductance [mS]
+        long double GL_Max; //Leak conductance [mS]
+        long double GCl_Max; //Chloride conductance [mS]
+
+        long double GNa_Max_Synapse;
+        long double GCl_Max_Synapse;
+        long double GK_Max_Synapse;
+
+        long double maxSynStimulus;
+        long double minSynStimulus;
 
         //Rest Conductances
-        double PNa_Rest;
-        double PK_Rest;
-        double PCl_Rest;
+        long double PNa_Rest;
+        long double PK_Rest;
+        long double PCl_Rest;
 
-        double GNa_Rest;
-        double GK_Rest;
-        double GCl_Rest;
+        long double GNa_Rest;
+        long double GK_Rest;
+        long double GCl_Rest;
 
         //Maximum Conductances for area
-        double maxSodiumConductanceForArea;
-        double maxPotasiumConductanceForArea;
-        double maxLeakConductanceForArea;
+        long double maxSodiumConductanceForArea;
+        long double maxPotasiumConductanceForArea;
+        long double maxLeakConductanceForArea;
 
-        double membraneVoltage;
-        double referenceVoltage;
+        long double membraneVoltage;
+        long double referenceVoltage;
+        /*////
+        double thresholdVoltage;
+        double HH_GatingVariablesReferenceVoltage;
+        */
 
-        //const static uint32_t Graph::MAX_GRAPH_INDEX = 1000;
+        //const static uint32_t MembraneVoltageGraph::MAX_GRAPH_INDEX = 1000;
         uint32_t membraneVoltageIndex;
-        double membraneVoltageValues[Graph::MAX_GRAPH_INDEX];
+        long double membraneVoltageValues[MembraneVoltageGraph::MAX_GRAPH_INDEX];
 
-        double m;
-        double h;
-        double n;
+        long double m;
+        long double h;
+        long double n;
 
-        double mValues[Graph::MAX_GRAPH_INDEX];
-        double nValues[Graph::MAX_GRAPH_INDEX];
-        double hValues[Graph::MAX_GRAPH_INDEX];
+        double mValues[MembraneVoltageGraph::MAX_GRAPH_INDEX];
+        double nValues[MembraneVoltageGraph::MAX_GRAPH_INDEX];
+        double hValues[MembraneVoltageGraph::MAX_GRAPH_INDEX];
 
-        double naCurrent;
-        double kCurrent;
-        double lCurrent;
+        long double naCurrent;
+        long double kCurrent;
+        long double lCurrent;
 
-        double graph_NaCurrent[Graph::MAX_GRAPH_INDEX];
-        double graph_KCurrent[Graph::MAX_GRAPH_INDEX];
-        double graph_LCurrent[Graph::MAX_GRAPH_INDEX];
+        long double graph_NaCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX];
+        long double graph_KCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX];
+        long double graph_LCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX];
 
-        double Tc; //Temperature Celcius
-        double Tk; //;Temperature Kelvin
+        long double Tc; //Temperature Celcius
+        long double Tk; //Temperature Kelvin
+
+        long double targetTk; // Target Temperature Kelvin that Tk will adjust to
+        long double maxTk = 0;
 
         double noiseLevel = 0;
 
         bool receivingStimulus;
-        double synStimulus;
-        double setConductance;
+        long double synStimulus;
         double setStimulus;
 
         Vector pos;
 
         double sigmoidGradient = -4;
 
-        double maxSynapticSignallingConductance;
-        double minSynapticSignallingConductance;
+        double maxSynapticSignalingConductance;
+        double minSynapticSignalingConductance;
+
+        bool drawEquilibrumVoltages = false;
+        bool drawCurrents = false;
+        bool drawGatingVariables = false;
+        bool drawVoltage = true;
+
+        bool voltageClamped = false;
+        double clampVoltage;
+        double receivingPreSynapticStimulus = false;
 
         //functions
-        double IncM();
-        double IncH();
-        double IncN();
-        double IncMembraneVoltage();
+        long double IncM();
+        long double IncH();
+        long double IncN();
+        long double AdjustMembraneVoltage();
+        long double AdjustTemperature();
 
     //public:
         HH_Neuron();
         void Load(FILE* file);
         void Save(FILE* file);
+        void saveMembraneVoltagesTraceGraph(FILE* file);
         void CopyWeights(HH_Neuron* srcNeuron, int32_t replaceColumn = -1, int32_t newColumn = -1);
         void Mutate(double rate);
-        //void MutateScale(double rate);
         void SetPos(Vector pos);
         void SetPos(double x, double y, double z);
-        void SetTemperature(double temperature);
+        void SetMembraneVoltage(long double voltage, bool clamp);
+        void SetTargetTemperature(long double temperature);
         void SetNoise(double noise);
         void SetSynStimulus(double synStimulus);
         void SetReceivingStimulus(bool value);
-        void AdjustAllSynapseConductance(double value);
-        void Reinforce(double value, bool usedConnections);
         void Process(double noise);
-        void AddMembraneVoltageToGraphValues();
-        ////void SaveVoltage(char* fileName);
-        void DetermineElectromagneticSignallingErrors(double refVoltage);
         double GetStrongestABSWeight();
         Vector GetMinMaxWeight();
-        void Draw(double maxABSWeight);
+        void Draw(double maxABSWeight, long double* comparisonVoltageValues = NULL);
         void ResetHH();
         void ResetSpikeCounts();
 };

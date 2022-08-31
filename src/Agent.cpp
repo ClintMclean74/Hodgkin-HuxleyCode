@@ -1,7 +1,27 @@
+/*
+ * Code System for the book "Solving Havana Syndrome and Biological Effects of RF
+ * Using the Hodgkin-Huxley Neuron Model"
+ * Copyright (C) 2022 by Clint Mclean <clint@mcleanresearchinstitute.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <math.h>
 #include <algorithm>
 #include <string.h>
 #include <windows.h>
+#include <io.h>
 
 #include "Environment.h"
 #include "HH_NeuralNetwork.h"
@@ -11,27 +31,23 @@
 #include "Environment.h"
 #include "Simulation.h"
 #include "Agents.h"
-#include "GraphicsUtilities.h"
+#include "GraphicsAndUI.h"
 
 Agent::Agent()
 {
     index = Agents::count;
 
+    if (index > 0)
+        resetLoadingData = true;
+
     char textBuffer[255];
-    sprintf(textBuffer, "agent_logs/agent%i_%i.txt", index, Simulation::simStartRealTime);
+
+    sprintf(textBuffer, "%s/%s/agent%i_%lu.txt", Simulation::saveRootFolder, Simulation::agentSaveLogFolder, index, Simulation::simStartRealTime);
     agentLog = fopen(textBuffer, "w+");
-
-    ////sprintf(textBuffer, "agent_voltages/nnVoltages%i_%i.txt", index, Simulation::simStartRealTime);
-
-    ////sprintf(textBuffer, "agent_voltages/nnVoltages%i_560657531.txt", index, Simulation::simStartRealTime);
-
-
 
     if (Simulation::loadingData)
     {
-        ////sprintf(textBuffer, "agents_3nn_30layers_9_30_37_37_00002_37_00004/agent_voltages/nnVoltages%i_642929968.txt", index, Simulation::simStartRealTime);
-        ////sprintf(textBuffer, "agents_2nn_9_30_37_37_000001/agent_voltages/nnVoltages%i_816196296.txt", index, Simulation::simStartRealTime);
-        sprintf(textBuffer, "agent_voltages/nnVoltages%i_910055203.txt", index, Simulation::simStartRealTime);
+        sprintf(textBuffer, "%s/%s/nnVoltages%i_1738528546.txt", Simulation::saveRootFolder, Simulation::loadAgentAllMembraneVoltagesFolder, index);
 
         loadingVoltageDataFile = fopen(textBuffer, "r+");
 
@@ -51,40 +67,21 @@ Agent::Agent()
             loadingVoltageDataFileBinary.close();
         }
     }
-    else if (Simulation::savingData)
+    else if (Simulation::saveAgentAllMembraneVoltagesTrace)
     {
-        ////voltagesFile = fopen(textBuffer, "w+");
-        ////sprintf(textBuffer, "agent_logs/agent%i_%i.txt", index, Simulation::simStartRealTime);
-
-        sprintf(textBuffer, "agent_voltages/nnVoltages%i_%i.txt", index, Simulation::simStartRealTime);
+        sprintf(textBuffer, "%s/%s/nnVoltages%i_%i.txt", Simulation::saveRootFolder, Simulation::saveAgentAllMembraneVoltagesFolder, index, Simulation::simStartRealTime);
         savingVoltageDataFileBinary.open(textBuffer, std::ofstream::binary);
     }
-
-    startNextStimIntervalSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
-    agentProcessedStimIntervalSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
-
-    startNextGenerationSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
-    agentProcessedGenerationSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
 
     generationTime = 0;
     prevGenerationTime = 0;
 
+    resetHHTime = 0;
     startStimTime = 0;
-
 
     length = Agent::radius/1.5;
     neuronRadius = Agent::radius/15;
     width = Agent::radius;
-
-
-    /*////length = 200;
-
-    Agent::radius = length*1.5;
-    neuronRadius = length/10;
-
-    ////width = Agent::radius*0.3;
-    width = Agent::radius;
-    */
 
     gridStart.Set((uint32_t)(((double) index)/Environment::ROWS) * Environment::GRID_WIDTH, (index % Environment::ROWS) * Environment::GRID_HEIGHT, 0);
     gridEnd.Set(gridStart.x + Environment::GRID_WIDTH, gridStart.y + Environment::GRID_HEIGHT, 0);
@@ -92,51 +89,23 @@ Agent::Agent()
     pointing.Set(1, 0.0, 0);
     refPointing.Set(1, 0.0, 0);
 
-    /*////
-    velocity = 1;
-    rotationDelta = 0.2;
-    */
-
     velocity = 50;
     rotationDelta = 10;
 
-
-    strcpy(foodRightStimulus, "000000111");
-    strcpy(foodForwardStimulus, "000111000");
-    strcpy(foodLeftStimulus, "111000000");
-    strcpy(noFoodStimulus, "000000000");
-
-    stimulusArray[0] = foodRightStimulus;
-    stimulusArray[1] = foodForwardStimulus;
-    stimulusArray[2] = foodLeftStimulus;
-    stimulusArray[3] = noFoodStimulus;
-
-    /*////strcpy(foodRightStimulus, "001");
-    strcpy(foodForwardStimulus, "010");
-    strcpy(foodLeftStimulus, "100");
-    strcpy(noFoodStimulus, "000");
-    */
-
     closestFoodIndex = -1;
-
     currentStimulus = "";
-
-    ////*resultsBuffers[i] = *srcNeurons->resultsBuffers[i];
-
     agentColor.Set(255.0/255, 145.0/255, 44.0/255);
     neuronActiveColor.Set(255.0/255, 145.0/255, 44.0/255);
 
     neuralNetwork = NULL;
 
-    resultStr = NULL;
-
     traceList = new RecurrentList(300);
 
     spikeCountsArrays = new uint32_t_ptr[HH_NeuralNetwork::LAYERS];
+    resultStr = NULL;
 
-    ReGenerate();
+    Reset();
 }
-
 
 Agent::Agent(Vector pos)
 {
@@ -170,17 +139,24 @@ double Agent::GetTemperature()
     return ((HH_NeuralNetwork*) neuralNetwork)->temperature;
 }
 
-void Agent::ReGenerate()
+void Agent::Reset()
 {
     fitness = 0;
-    ////pos.Set((double) rand() / RAND_MAX * Environment::rangeX, (double) rand() / RAND_MAX * Environment::rangeY, 0);
-
     pointing.Set(1, 0.0, 0);
 
     pos.Set((uint32_t)(((double) index)/Environment::ROWS) * Environment::GRID_WIDTH + Environment::GRID_WIDTH/2, (index % Environment::ROWS) * Environment::GRID_HEIGHT + Environment::GRID_HEIGHT/2, 0);
 
     if (neuralNetwork)
         ((HH_NeuralNetwork*) neuralNetwork)->ResetHH();
+}
+
+void Agent::RegenerateNNConnections()
+{
+    if (neuralNetwork)
+    {
+        ((HH_NeuralNetwork*) neuralNetwork)->RegenerateConnections();
+        ((HH_NeuralNetwork*) neuralNetwork)->neurons->ClearResultsBuffers();
+    }
 }
 
 void Agent::ResetTrace()
@@ -200,32 +176,6 @@ void Agent::AddTrace(char* description)
 void Agent::Forward()
 {
     Vector newPos = pos + pointing * velocity;
-
-    /*////if (pos.x<gridStart.x)
-        pos.x = gridEnd.x;
-
-    if (pos.x>gridEnd.x)
-        pos.x = gridStart.x;
-
-    if (pos.y<gridStart.y)
-        pos.y = gridEnd.y;
-
-    if (pos.y>gridEnd.y)
-        pos.y = gridStart.y;
-        */
-
-    /*////if (newPos.x<gridStart.x)
-        return;
-
-    if (newPos.x>gridEnd.x)
-        return;
-
-    if (newPos.y<gridStart.y)
-        return;
-
-    if (newPos.y>gridEnd.y)
-        return;
-        */
 
     if (newPos.x < gridStart.x)
         newPos.x = gridStart.x;
@@ -267,454 +217,382 @@ void Agent::ActivateNeuronsFromFoodAngle()
 
         double newDistanceToFood = Environment::foodForAgents_ptr->GetDistanceToFood(pos, closestFoodIndex);
 
-        /*////if (newDistanceToFood <= distanceToFood)
-            fitness += 0.1;
-        else
-            fitness -= 0.1;
-            */
-
         distanceToFood = newDistanceToFood;
 
         Vector vectorToFood = Environment::foodForAgents_ptr->foodArray[closestFoodIndex]->pos - pos;
         double newAngleToFood = vectorToFood.CalculateAngle(pointing);
 
-        /*////if (abs(newAngleToFood) <= abs(angleToFood))
-            fitness += 0.1;
-        else
-            fitness -= 0.1;
-            */
-
         angleToFood = newAngleToFood;
 
-        ////angleToFood = (double) rand() / RAND_MAX * 6.28 - 3.14;
-
-        if (angleToFood > 0.19625)
+        if (angleToFood > 0.174532925199432) // greater than 10 degrees
         {
-            //std::cout << "Q = "<< foodLeftStimulus;
-            //std::cout << "\n\n";
-            currentStimulus = foodLeftStimulus;
-            //((HH_NeuralNetwork*) neuralNetwork)->SetQ(foodLeftStimulus);
+            currentStimulus = Simulation::foodLeftStimulus;
         }
-        else if (angleToFood < -0.19625)
+        else if (angleToFood < -0.174532925199432) //less than -10 degrees
         {
-            //std::cout << "Q = "<< foodRightStimulus;
-            //std::cout << "\n\n";
-            currentStimulus = foodRightStimulus;
-            //((HH_NeuralNetwork*) neuralNetwork)->SetQ(foodRightStimulus);
+            currentStimulus = Simulation::foodRightStimulus;
         }
-        else
+        else //food with 20 degrees field of view
         {
-            //std::cout << "Q = "<< foodForwardStimulus;
-            //std::cout << "\n\n";
-            currentStimulus = foodForwardStimulus;
-            //((HH_NeuralNetwork*) neuralNetwork)->SetQ(foodForwardStimulus);
+            currentStimulus = Simulation::foodForwardStimulus;
         }
-
-
-        /*////currentStimulus = stimulusArray[currentStimulusIndex++];
-
-        if (currentStimulusIndex >= stimulusArrayLength)
-            currentStimulusIndex = 0;
-            */
-
-        /*
-        std::cout << "Agent index = "<< index;
-        std::cout << "\n\n";
-        std::cout << "Q = "<< currentStimulus;
-        std::cout << "\n\n";
-        */
 
         ((HH_NeuralNetwork*) neuralNetwork)->SetQ(currentStimulus);
     }
     else
-        ((HH_NeuralNetwork*) neuralNetwork)->SetQ(noFoodStimulus);
+        ((HH_NeuralNetwork*) neuralNetwork)->ClearQ();
 }
 
-void AgentProcessThread(void* param)
+/*////void Agent::WriteToAgentLog()
 {
-    Agent* agent = ((Agent *) param);
+    sprintf(textBuffer, "Simulation Time: %f", Simulation::generationTime);
+    uint32_t length = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), length, agentLog);
+    fwrite("\n", sizeof(char), 1, agentLog);
 
-    srand(agent->index);
+    sprintf(textBuffer, "This Agent Generation Time: %f", generationTime);
+    length = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), length, agentLog);
+    fwrite("\n", sizeof(char), 1, agentLog);
 
-    if (Simulation::threading)
+    fwrite(currentStimulus, sizeof(char), strlen(currentStimulus), agentLog);
+    fwrite("\n", sizeof(char), 1, agentLog);
+
+    resultStr = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetStringFromResult(((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1);
+
+    fwrite(resultStr, sizeof(char), strlen(resultStr), agentLog);
+    fwrite("\n", sizeof(char), 1, agentLog);
+    fflush(agentLog);
+}*/
+
+//ProcessResult(): processes the final layer neural activation pattern, adds the
+//stimulus, result and action mappings to buffers, determines the effect on fitness (errors) for training and also writes to the agent logs
+uint32_t Agent::ProcessResult()
+{
+    uint32_t existingACount;
+    startStimTime = generationTime + Simulation::resetHHDuration;
+    nextStimulusIndex++;
+
+    if (nextStimulusIndex >= Simulation::stimulusArrayLength)
+        nextStimulusIndex = 0;
+
+    if (Simulation::training)
+        sprintf(textBuffer, "Training Agent:\n");
+    else
+        sprintf(textBuffer, "Testing Agent:\n");
+
+    uint32_t textLength = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), textLength, agentLog);
+
+    sprintf(textBuffer, "Simulation Time: %f", Simulation::generationTime);
+    textLength = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), textLength, agentLog);
+    fwrite("\n", sizeof(char), 1, agentLog);
+
+    sprintf(textBuffer, "This Agent Generation Time: %f", generationTime);
+    textLength = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), textLength, agentLog);
+    fwrite("\n", sizeof(char), 1, agentLog);
+
+    fwrite(currentStimulus, sizeof(char), strlen(currentStimulus), agentLog);
+
+    resultStr = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetStringFromResult(((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1);
+
+    fwrite(resultStr, sizeof(char), strlen(resultStr), agentLog);
+    fwrite("\n", sizeof(char), 1, agentLog);
+    fflush(agentLog);
+
+    if (Simulation::training) //training so add the stimulus, result and determined action from stimulus mappings to the agents buffer
+        ((HH_NeuralNetwork*) neuralNetwork)->neurons->AddStimulusResultActionMappingsToBuffers();
+
+    //when the agent is being tested it will use the action stored for the activations, we also get it here to write it to the training logs
+    action = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetResultAction();
+
+    if (action == Action::None) //an action has not been stored for the activation pattern, these unknown patterns result from RF temperature induced errors
     {
-        WaitForSingleObject(agent->startNextStimIntervalSemaphore, 100000);
-        WaitForSingleObject(agent->startNextGenerationSemaphore, 100000);
+        sprintf(textBuffer, "Selecting Random Action\n: ");
+        textLength = strlen(textBuffer);
+        fwrite(textBuffer, sizeof(char), textLength, agentLog);
+
+        double randomDbl = (1 + (double) rand() / RAND_MAX * 3);
+        action = static_cast<Action> ((uint32_t) randomDbl);
+
+        if (action == 4) //numeral value for action should be 1, 2 or 3. rand() generates 4, since max is inclusive
+            action = (Action) 3; //so set to 3
     }
 
-    while(true)
+    switch (action)
     {
-        ////std::cout << "WaitForSingleObject(startNextGenerationSemaphore, 100000); " << agent->index;
-        ////std::cout << "\n\n";
-        if (Simulation::threading)
+        case (Action::RotateRight):
+            Rotate(-rotationDelta);
+            sprintf(textBuffer, "Action::RotateRight");
+        break;
+        case (Action::RotateLeft):
+            Rotate(rotationDelta);
+            sprintf(textBuffer, "Action::RotateLeft");
+        break;
+        case (Action::Forward):
+            Forward();
+            sprintf(textBuffer, "Action::Forward");
+        break;
+        case (Action::None):
+            sprintf(textBuffer, "Action::None");
+        break;
+    }
+
+    textLength = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), textLength, agentLog);
+    fwrite("\n", sizeof(char), 1, agentLog);
+
+    fflush(agentLog);
+
+    sprintf(textBuffer, "Original Fitness: %f\n", fitness);
+    textLength = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), textLength, agentLog);
+
+    //adjust the agents' fitness according to whether the result activation pattern is in the buffer more than once
+    //It should only be there once so that each stimulus has it's own result activation pattern, i.e, three actions for three stimulus patterns
+    existingACount = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetExistingACount(((HH_NeuralNetwork*) neuralNetwork)->neurons->neurons[((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1], ((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1);
+
+    if (existingACount>1)
+    {
+        fitness -= existingACount;
+    }
+
+    //also reduce the fitness if there isn't an activation pattern, since we want a stimulus to produce a resulting activation pattern
+    //so that we can check the effects of temperature on these
+    if (ResultsBuffer::Zeros(resultStr))
+        fitness--;
+
+    sprintf(textBuffer, "New Fitness: %f\n", fitness);
+    textLength = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), textLength, agentLog);
+
+    sprintf(textBuffer, "Existing A count: %i\n", existingACount);
+    textLength = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), textLength, agentLog);
+
+    fwrite("\n", sizeof(char), 1, agentLog);
+    fflush(agentLog);
+
+    ((HH_NeuralNetwork*) neuralNetwork)->ResetHH(); //Reset Neurons for next stimulus
+
+    if (index > 0)
+        resetLoadingData = true;
+
+    GetSpikeCountArraysForLayers(spikeCountsArrays);
+
+    /*////if (Simulation::stimulus)
+    {
+        if (Simulation::findStimulusValue)
         {
-            agent->prevGenerationTime = agent->generationTime;
-
-            agent->Process();
-
-            if (agent->generationTime >= Simulation::generationDuration || (agent->generationTime == 0 && agent->prevGenerationTime != 0))
+            if (index == 0)
             {
-                ////std::cout << "ReleaseSemaphore(agent->agentProcessedGenerationSemaphore, 1, NULL); " << agent->index;
-                ////std::cout << "\n\n";
-                agent->generationTime = 0;
-                ReleaseSemaphore(agent->agentProcessedGenerationSemaphore, 1, NULL);
-                WaitForSingleObject(agent->startNextGenerationSemaphore, 100000);
+                if (((HH_NeuralNetwork*) neuralNetwork)->GetTotalSpikeCount() == 0)
+                {
+                    Simulation::stimulusFound = false;
+
+                    Simulation::minStimulusValue = Simulation::stimulusValue;
+                    Simulation::stimulusValue = (Simulation::maxStimulusValue + Simulation::stimulusValue) / 2;
+                }
+                else
+                {
+                    Simulation::stimulusFound = true;
+                }
+            }
+            else
+            {
+                if (((HH_NeuralNetwork*) neuralNetwork)->GetTotalSpikeCount() > 0)
+                {
+                    if (Simulation::findStimulusValue)
+                    {
+                        Simulation::stimulusFound = false;
+
+                        Simulation::maxStimulusValue = Simulation::stimulusValue;
+                        Simulation::stimulusValue = (Simulation::minStimulusValue + Simulation::stimulusValue) / 2;
+                    }
+                }
+                else
+                {
+                    Simulation::stimulusFound = true;
+                }
             }
         }
 
-
-        /*if (agent->sleepIndex > 1)
+        if (Simulation::findWeightValue)
         {
-            Sleep(Simulation::lag);
-            agent->sleepIndex = 0;
-        }*/
-
-        while(Simulation::paused)
-            Sleep(100);
-
-
-        if (Simulation::lag > 0)
-        {
-        for(uint32_t i=0; i<(uint32_t)Simulation::lag;i++)
-            Sleep(1);
-
-        uint32_t max = 1/remainder(Simulation::lag, 1);
-
-        if (agent->sleepIndex > max)
-        {
-            Sleep(Simulation::lag);
-            agent->sleepIndex = 0;
-        }
-
-        agent->sleepIndex++;
-        }
-    }
-}
-
-void Agent::LaunchProcessingThread()
-{
-    agentProcessThreadHandle = Threading::CreateThread(AgentProcessThread, this);
-}
-
-void Agent::Process()
-{
-    ////if (!(index >= 0 && index <= 9))
-    ////std::cout << "Agent Process: " << index << "\n";
-    if (index == 1)
-        int grc = 1;
-
-    if (Simulation::stimulus)
-    {
-        uint32_t existingQCount, existingACount;
-        ////if (generationTime >= startStimTime && generationTime < startStimTime + HH_NeuralNetwork::stimDuration && (index==0 || Simulation::currentSimTime>69))
-        if (generationTime >= startStimTime && generationTime < startStimTime + HH_NeuralNetwork::stimDuration)
-        {
-            ////((HH_NeuralNetwork*) neuralNetwork)->ResetSpikeCounts();
-
-            ////currentStimulus = stimulusArray[currentStimulusIndex];
-
-
-
-        /*////if (angleToFood > 0.19625)
-        {
-            //std::cout << "Q = "<< foodLeftStimulus;
-            //std::cout << "\n\n";
-            currentStimulus = foodLeftStimulus;
-            //((HH_NeuralNetwork*) neuralNetwork)->SetQ(foodLeftStimulus);
-        }
-        else if (angleToFood < -0.19625)
-        {
-            //std::cout << "Q = "<< foodRightStimulus;
-            //std::cout << "\n\n";
-            currentStimulus = foodRightStimulus;
-            //((HH_NeuralNetwork*) neuralNetwork)->SetQ(foodRightStimulus);
-        }
-        else
-        {
-            //std::cout << "Q = "<< foodForwardStimulus;
-            //std::cout << "\n\n";
-            currentStimulus = foodForwardStimulus;
-            //((HH_NeuralNetwork*) neuralNetwork)->SetQ(foodForwardStimulus);
-        }
-        */
-
-        /*
-        std::cout << "Agent index = "<< index;
-        std::cout << "\n\n";
-        std::cout << "Q = "<< currentStimulus;
-        std::cout << "\n\n";
-        */
-
-            if (Simulation::trainingOrEvolution || Simulation::testingLayerErrors)
+            if (index == 0)
             {
-                currentStimulus = stimulusArray[currentStimulusIndex];
+                if (((HH_NeuralNetwork*) neuralNetwork)->GetSpikeCountsForLayer(1) == 0)
+                {
+                    Simulation::weightFound = false;
+
+                    Simulation::minWeightValue = Simulation::weightValue;
+
+                    if (Simulation::weightValue == Simulation::maxWeightValue)
+                    {
+                        Simulation::maxWeightValue = Simulation::maxWeightValue * 2;
+                        Simulation::weightValue = Simulation::maxWeightValue;
+                    }
+                    else
+                        Simulation::weightValue = (Simulation::maxWeightValue + Simulation::weightValue) / 2;
+                }
+                else
+                {
+                    Simulation::weightFound = true;
+                }
+            }
+            else
+            {
+                if (((HH_NeuralNetwork*) neuralNetwork)->GetSpikeCountsForLayer(1) > 0)
+                {
+                    if (Simulation::findWeightValue)
+                    {
+                        Simulation::weightFound = false;
+                        Simulation::maxWeightValue = Simulation::weightValue;
+
+                        if (Simulation::weightValue == Simulation::minWeightValue)
+                        {
+                            Simulation::minWeightValue = Simulation::minWeightValue / 2;
+                            Simulation::weightValue = Simulation::minWeightValue;
+                        }
+                        else
+                            Simulation::weightValue = (Simulation::minWeightValue + Simulation::weightValue) / 2;
+                    }
+                }
+            }
+
+            ((HH_NeuralNetwork*) neuralNetwork)->neurons->SetSynapseConductance(Simulation::weightValue);
+        }
+
+        ((HH_NeuralNetwork*) neuralNetwork)->ResetHH();
+    }
+    */
+
+    ((HH_NeuralNetwork*) neuralNetwork)->ResetSpikeCounts();
+}
+
+uint32_t Agent::Process(bool startInputStimulus)
+{
+    uint32_t status = 0;
+
+    GetSpikeCountArraysForLayers(spikeCountsArrays);
+
+    ProcessingStatus prevProcessingStatus = processingStatus;
+
+    //Reset the Hodgkin-Huxley neurons before processing the new stimulus so that it's unaffected from previous processing
+    if (generationTime >= resetHHTime && generationTime < resetHHTime + Simulation::resetHHDuration)
+    {
+        processingStatus = ProcessingStatus::ResettingHH;
+
+        /*////if (prevProcessingStatus != ProcessingStatus::ResettingHH)
+            ((HH_NeuralNetwork*) neuralNetwork)->ResetHH();
+            */
+    }
+    else //stimulating the first layer, sensory neurons
+        if (generationTime >= resetHHTime + Simulation::resetHHDuration && generationTime < resetHHTime + Simulation::resetHHDuration + Simulation::stimDuration)
+        {
+            if (startInputStimulus)
+                processingStatus = ProcessingStatus::Stimulating;
+        }
+        else //first layer neurons have been stimulated, now process the signals through the network for a specified duration (Simulation::synapticStimulusIntervalFromStimStart), long enough for the signals to activate the final layers
+            if (generationTime >= resetHHTime + Simulation::resetHHDuration + Simulation::stimDuration && generationTime < resetHHTime + Simulation::resetHHDuration + Simulation::synapticStimulusIntervalFromStimStart)
+            {
+                processingStatus = ProcessingStatus::ProcessignStimulus;
+            }
+            else //now process the final layer activations
+                if (generationTime >= resetHHTime + Simulation::resetHHDuration + Simulation::synapticStimulusIntervalFromStimStart)
+                {
+                    /*////
+                    ProcessResult();
+                    status = 1;
+                    resetHHTime = generationTime;
+                    */
+
+                    processingStatus = ProcessingStatus::ProcessedResult;
+                }
+
+    switch(processingStatus)
+    {
+        case(ProcessingStatus::ResettingHH):
+            if (prevProcessingStatus != ProcessingStatus::ResettingHH)
+                ((HH_NeuralNetwork*) neuralNetwork)->ResetHH();
+
+            ((HH_NeuralNetwork*) neuralNetwork)->ClearQ();
+        break;
+        case(ProcessingStatus::Stimulating):
+            if (Simulation::loadingData && resetLoadingData)
+            {
+                loadingVoltageDataBufferOffset = 0;
+                resetLoadingData = false;
+            }
+
+            if (Simulation::training || Simulation::testingLayerErrors)
+            {
+                currentStimulus = Simulation::stimulusArray[nextStimulusIndex];
                 ((HH_NeuralNetwork*) neuralNetwork)->SetQ(currentStimulus);
             }
             else
             {
                 ActivateNeuronsFromFoodAngle();
-
-                /*////Action action = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetResultAction();
-
-                    switch (action)
-                    {
-                        case (Action::RotateRight):
-                           Rotate(-rotationDelta);
-                        break;
-                        case (Action::RotateLeft):
-                            Rotate(-rotationDelta);
-                        break;
-                        case (Action::Forward):
-                            Forward();
-                        break;
-                    }*/
             }
-        }
-        else
-            if (generationTime >= startStimTime + HH_NeuralNetwork::stimDuration && generationTime < startStimTime + HH_NeuralNetwork::stimIntervalTimeFromStimStart)
-                ((HH_NeuralNetwork*) neuralNetwork)->SetQ(noFoodStimulus);
-            else
-            {
-                if (startStimTime < generationTime)
-                {
-                    startStimTime = generationTime;
-                    ////angleToFood = (double) rand() / RAND_MAX * 1.57 - 0.785;
+        break;
+        case(ProcessingStatus::ProcessignStimulus):
+            ((HH_NeuralNetwork*) neuralNetwork)->ClearQ();
+        break;
+        case(ProcessingStatus::ProcessedResult):
+            ProcessResult();
+            status = 1;
 
-                    currentStimulusIndex++;
-                    ////currentStimulusIndex=1;
-
-                    if (currentStimulusIndex >= stimulusArrayLength - 1)
-                        currentStimulusIndex = 0;
-
-
-                    sprintf(textBuffer, "Simulation Time: %f", Simulation::currentSimTime);
-                    uint32_t length = strlen(textBuffer);
-                    fwrite(textBuffer, sizeof(char), length, agentLog);
-                    fwrite("\n", sizeof(char), 1, agentLog);
-
-                    sprintf(textBuffer, "This Agent Generation Time: %f", generationTime);
-                    length = strlen(textBuffer);
-                    fwrite(textBuffer, sizeof(char), length, agentLog);
-                    fwrite("\n", sizeof(char), 1, agentLog);
-
-
-                    fwrite(currentStimulus, sizeof(char), strlen(currentStimulus), agentLog);
-                    fwrite("\n", sizeof(char), 1, agentLog);
-
-
-                    resultStr = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetStringFromResult(((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1);
-
-                    fwrite(resultStr, sizeof(char), strlen(resultStr), agentLog);
-                    fwrite("\n", sizeof(char), 1, agentLog);
-                    fflush(agentLog);
-
-                    if (Simulation::trainingOrEvolution)
-                        ((HH_NeuralNetwork*) neuralNetwork)->neurons->AddResultsBuffers();
-                    else
-                    {
-                        action = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetResultAction();
-
-                        bool uncertain = false;
-
-                        if (action == Action::None)
-                        {
-                            sprintf(textBuffer, "Selecting Random Action: ");
-
-                            double randomDbl = (1 + (double) rand() / RAND_MAX * 3);
-
-                            action = static_cast<Action> ((uint32_t) randomDbl);
-                            ////action = static_cast<Action> (2);
-
-                            if (action == 4)
-                                action = (Action) 3;
-                        }
-
-                        switch (action)
-                        {
-                            case (Action::RotateRight):
-                                Rotate(-rotationDelta);
-                                sprintf(textBuffer, "Action::RotateRight");
-                            break;
-                            case (Action::RotateLeft):
-                                Rotate(rotationDelta);
-                                sprintf(textBuffer, "Action::RotateLeft");
-                            break;
-                            case (Action::Forward):
-                                Forward();
-                                sprintf(textBuffer, "Action::Forward");
-                            break;
-                            case (Action::None):
-                                sprintf(textBuffer, "Action::None");
-                            break;
-                        }
-
-                        uint32_t length = strlen(textBuffer);
-                        fwrite(textBuffer, sizeof(char), length, agentLog);
-                        fwrite("\n", sizeof(char), 1, agentLog);
-
-                        fflush(agentLog);
-                    }
-
-                        sprintf(textBuffer, "Original Fitness: %f\n", fitness);
-                        length = strlen(textBuffer);
-                        fwrite(textBuffer, sizeof(char), length, agentLog);
-
-
-                    existingQCount = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetExistingQCount(currentStimulus, ((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1);
-
-                    /*//original if (existingQCount>1)
-                        fitness -= existingQCount;
-                        */
-
-                    existingACount = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetExistingACount(((HH_NeuralNetwork*) neuralNetwork)->neurons->neurons[((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1], ((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1);
-
-                    /*std::cout << "currentStimulus: " << currentStimulus;
-                    std::cout << "\n\n";
-                    std::cout << "Result Layer: " << ((HH_NeuralNetwork*) neuralNetwork)->neurons->neurons[((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1][0].spikeCount << " " << ((HH_NeuralNetwork*) neuralNetwork)->neurons->neurons[((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1][1].spikeCount << " " << ((HH_NeuralNetwork*) neuralNetwork)->neurons->neurons[((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1][2].spikeCount;
-                    std::cout << "\n\n";
-                    */
-
-                    if (existingACount>1)
-                    {
-                        fitness -= existingACount;
-                        /*std::cout << "fitness: " << fitness;
-                        std::cout << "existingACount: " << existingACount;
-                        std::cout << "existingACount>1" << "\n\n";
-                        */
-                    }
-
-                    ////if (strcmp(resultStr, "0000000000")==0)
-                    if (ResultsBuffer::Zeros(resultStr))
-                    ////if (strcmp(resultStr, HH_NeuralNetwork::resultNullStr)==0)
-                        fitness--;
-
-
-                    sprintf(textBuffer, "New Fitness: %f\n", fitness);
-                    length = strlen(textBuffer);
-                    fwrite(textBuffer, sizeof(char), length, agentLog);
-
-
-                    sprintf(textBuffer, "Existing Q count: %i\n", existingQCount);
-                    length = strlen(textBuffer);
-                    fwrite(textBuffer, sizeof(char), length, agentLog);
-
-                    sprintf(textBuffer, "Existing A count: %i\n", existingACount);
-                    length = strlen(textBuffer);
-                    fwrite(textBuffer, sizeof(char), length, agentLog);
-
-                    fwrite("\n", sizeof(char), 1, agentLog);
-
-                    fflush(agentLog);
-
-                    ((HH_NeuralNetwork*) neuralNetwork)->ResetHH(); //Reset Neurons for next stimulus
-                }
-                else //new generation
-                {
-                    startStimTime = 0;
-                    ((HH_NeuralNetwork*) neuralNetwork)->ResetHH();
-                }
-
-
-                GetSpikeCountArraysForLayers(spikeCountsArrays);
-
-                ReleaseSemaphore(agentProcessedStimIntervalSemaphore, 1, NULL);
-                WaitForSingleObject(startNextStimIntervalSemaphore, 100000);
-
-                ((HH_NeuralNetwork*) neuralNetwork)->ResetSpikeCounts();
-            }
+            resetHHTime = generationTime; //set the resetHHTime to the current generationTime so that the process starts again
+        break;
     }
-    else
-        ((HH_NeuralNetwork*) neuralNetwork)->SetQ(noFoodStimulus);
 
-    ////if (!Simulation::loadingData)
+    if (Simulation::loadingData)
     {
-        if (Simulation::loadingData)
-    {
-        /*////char textBuffer[9999];
-        memset(textBuffer, 0, 9999);
-        fgets(textBuffer, 9999, loadingVoltageDataFile);
-
-        generationTime = atof(textBuffer);
-
-        ((HH_NeuralNetwork*) neuralNetwork)->neurons->LoadVoltageData(loadingVoltageDataFile);
-        */
-
-
         generationTime = *reinterpret_cast<double*>(loadingVoltageDataBuffer + loadingVoltageDataBufferOffset);
         loadingVoltageDataBufferOffset += sizeof(double);
 
-        ////std::cout << "generationTime = "<< generationTime;
-        ////std::cout << "\n\n";
-
         loadingVoltageDataBufferOffset = ((HH_NeuralNetwork*) neuralNetwork)->neurons->LoadVoltageDataBinary(loadingVoltageDataBuffer, loadingVoltageDataBufferOffset);
-
-        ////if ((uint32_t) (generationTime * 100) % 3 == 0)
-            ////Sleep(7);
-        /*////if (Simulation::nnVisible)
-            Sleep(10);
-            */
     }
-    if (index == 1)
-        int grc = 1;
 
-        ((HH_NeuralNetwork*) neuralNetwork)->Process();
+    //process the Hodgkin-Huxley network
+    ((HH_NeuralNetwork*) neuralNetwork)->Process();
 
-        if (Simulation::savingData)
-        {
-
-            savingVoltageDataFileBinary.write(reinterpret_cast<const char*> (&generationTime), sizeof(double));// Size of vector
-////osfile.write(reinterpret_cast<const char*> (&vec[0]), sz*sizeof(float));
-////osfile.write(reinterpret_cast<const char*> (&a), sizeof(unsigned int));
-////osfile.write(reinterpret_cast<const char*> (&b), sizeof(unsigned int));
-
-        ////sprintf(textBuffer, "%f", generationTime);
-        ////fwrite(textBuffer, sizeof(char), strlen(textBuffer), voltagesFile);
-        ////fwrite("\n", sizeof(char), 1, voltagesFile);
-
-        /*////savingVoltageDataFileBinary.write(textBuffer, strlen(textBuffer));
-        savingVoltageDataFileBinary.flush();
-
-        ////((HH_NeuralNetwork*) neuralNetwork)->neurons->SaveVoltages(voltagesFile);
-        ((HH_NeuralNetwork*) neuralNetwork)->neurons->SaveVoltagesBinary(&savingVoltageDataFileBinary);
-        */
+    if (Simulation::saveAgentAllMembraneVoltagesTrace)
+    {
+        savingVoltageDataFileBinary.write(reinterpret_cast<const char*> (&generationTime), sizeof(double));// Size of vector
 
         ((HH_NeuralNetwork*) neuralNetwork)->neurons->SaveVoltagesBinary(&savingVoltageDataFileBinary);
         savingVoltageDataFileBinary.flush();
-        ////savingVoltageDataFileBinary.close();
+    }
 
-        ////Simulation::savingData = false;
-        }
-
-        /*////Action action = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetResultAction();
-
-                    switch (action)
-                    {
-                        case (Action::RotateRight):
-                           Rotate(-rotationDelta);
-                        break;
-                        case (Action::RotateLeft):
-                            Rotate(rotationDelta);
-                        break;
-                        case (Action::Forward):
-                            Forward();
-                        break;
-                    }
-                    */
-
-        int32_t closestFoodIndex = FoodAvailable();
+    if (!Simulation::training && !Simulation::testingLayerErrors) //AI food finding task
+    {
+        int32_t closestFoodIndex = FoodAvailable(); //is food available, close enough to be eaten
 
         if (closestFoodIndex > -1)
             EatFood(closestFoodIndex);
-
-        if (!Simulation::loadingData)
-            generationTime += Simulation::deltaTime;
-
-        ////((HH_NeuralNetwork*) neuralNetwork)->neurons->LoadVoltageData(loadingVoltageDataFile);
     }
 
-    /*generationTime = (uint32_t )((generationTime +0.005) * 100);
-    generationTime = ((double) generationTime)/100;
-    */
+    if (!Simulation::loadingData)
+    {
+        generationTime += Simulation::deltaTime; //increment the simulation time
+
+        //reset the generation time if longer than the generation duration
+        //the agents are managed in main.cpp when generationTime == 0, i.e, evolve (train) or test the next generation
+        //when sufficiently evolved (trained), errors == 0 then the new generation is tested for effects of RF temperature increases
+        if (generationTime >= Simulation::generationDuration || (generationTime == 0 && prevGenerationTime != 0))
+        {
+            generationTime = 0;
+            resetHHTime = 0;
+        }
+    }
+
+    if (Simulation::lag > 0)//use a lag to slow the simulation to check data
+        Sleep(Simulation::lag);
+
+    return status;
 }
 
 int32_t Agent::FoodAvailable()
@@ -725,11 +603,8 @@ int32_t Agent::FoodAvailable()
 void Agent::EatFood(uint32_t closestFoodIndex)
 {
     Environment::foodForAgents_ptr->FoodEaten(closestFoodIndex);
-    ////Environment::foodForAgents_ptr->RemoveFood(closestFoodIndex);
-    ////((HH_NeuralNetwork*) neuralNetwork)->Reinforce(FoodForAgents::reinforcementValue);
 
-    ////fitness++;
-    if (!Simulation::trainingOrEvolution)
+    if (!Simulation::training)
         fitness+=10;
 }
 
@@ -740,20 +615,16 @@ void Agent::Draw()
     traceList->Begin();
     posAngle = (PosAngle *) traceList->GetCurrent();
 
-    ////glColor3f(neuronActiveColor.r, neuronActiveColor.g, neuronActiveColor.b);
     glColor3f(1, 1, 0);
 
     Vector newPos;
-    ////glBegin(GL_LINES);
     glBegin(GL_LINE_STRIP);
-    while(posAngle)
+    while(posAngle) //draw the agents movement trace
     {
         glVertex3f(posAngle->pos.x, posAngle->pos.y, posAngle->pos.z);
         newPos = posAngle->pos + posAngle->angle * velocity;
         glVertex3f(newPos.x, newPos.y, newPos.z);
-        glVertex3f(posAngle->pos.x, posAngle->pos.y, posAngle->pos.z);
-
-        ////Draw(posAngle->pos, -refPointing.CalculateAngle(posAngle->angle), 0.1);
+        ////glVertex3f(posAngle->pos.x, posAngle->pos.y, posAngle->pos.z);
 
         traceList->Next();
         posAngle = (PosAngle *) traceList->GetCurrent();
@@ -767,7 +638,7 @@ void Agent::Draw()
 
     traceList->Begin();
     posAngle = (PosAngle *) traceList->GetCurrent();
-    while(posAngle)
+    while(posAngle) //draw the agents and the text for the action at each trace
     {
         actions++;
 
@@ -782,8 +653,7 @@ void Agent::Draw()
             textYOffset = 0;
 
         glColor3f(1, 1, 1);
-        ////glColor3f(0, 0, 0);
-        GraphicsUtilities::DrawTextStr(posAngle->description, posAngle->pos.x, posAngle->pos.y + textYOffset, posAngle->pos.z, 0.05);
+        GraphicsAndUI::DrawTextStr(posAngle->description, posAngle->pos.x, posAngle->pos.y + textYOffset, posAngle->pos.z, 0.05);
 
         prevPos = posAngle->pos;
 
@@ -795,17 +665,13 @@ void Agent::Draw()
     Draw(pos, -refPointing.CalculateAngle(pointing));
 }
 
+//Draw the agent
 void Agent::Draw(Vector agentPos, double angle, double scale, bool justTriangle)
 {
     glPushMatrix();
     glTranslatef(agentPos.x, agentPos.y, agentPos.z);
 
-
     glRotatef(angle/MathUtilities::degreeToRadian, 0.0, 0.0, 1.0);
-
-    ////glRotatef(45, 0.0, 0.0, 1.0);
-
-    ////glColor3f(neuronActiveColor.r, neuronActiveColor.g, neuronActiveColor.b);
 
     glScalef(scale, scale, scale);
 
@@ -816,57 +682,37 @@ void Agent::Draw(Vector agentPos, double angle, double scale, bool justTriangle)
         glVertex3f(0, width, 0);
     glEnd();
 
-    ////justTriangle = true;
-
     if (!justTriangle)
     {
-    Vector neuronPos(-Agent::radius, 0, 0);
-    double neuronAngleDelta = -360/(double)HH_NeuralNetwork::layer1Length;
+        Vector neuronPos(Agent::radius*1.2, 0, 0);
+        double neuronAngleDelta = -160/((double)HH_NeuralNetwork::layer1Length - 1);
 
-    neuronPos.Rotate(neuronAngleDelta/2 * MathUtilities::degreeToRadian);
-    for (uint32_t i=0; i<HH_NeuralNetwork::layer1Length; i++)
-    {
-        GraphicsUtilities::DrawCircle(neuronPos.x, neuronPos.y, neuronRadius, 10, currentStimulus[i]=='1');
-        neuronPos.Rotate(neuronAngleDelta * MathUtilities::degreeToRadian);
-    }
-
-    /*////
-    neuronRadius = Agent::radius/15;
-    ////neuronRadius = length/10;
-
-    neuronPos.x = -length;
-    neuronPos.y = neuronRadius * 3;
-
-    for (int32_t i=2; i>=0; i--)
-    {
-        GraphicsUtilities::DrawCircle(neuronPos.x, neuronPos.y, neuronRadius, 10, ((uint32_t) action)==(i+1));
-        neuronPos.y -= neuronRadius * 2;
-    }
-
-    neuronRadius = length/HH_NeuralNetwork::resultLayerLength;
-
-    if (resultStr != NULL)
-    {
-        neuronPos.x = -length/2;
-        neuronPos.y = neuronRadius * HH_NeuralNetwork::resultLayerLength;
-
-        for (int32_t i=HH_NeuralNetwork::resultLayerLength-1; i>=0; i--)
+        neuronPos.Rotate(-neuronAngleDelta * MathUtilities::degreeToRadian);
+        for (uint32_t i=0; i<HH_NeuralNetwork::layer1Length; i++)
         {
-            GraphicsUtilities::DrawCircle(neuronPos.x, neuronPos.y, neuronRadius, 10, resultStr[i] != '0');
-            neuronPos.y -= neuronRadius * 2;
+            GraphicsAndUI::DrawCircle(neuronPos.x, neuronPos.y, neuronRadius, 10, currentStimulus[i]=='1');
+            neuronPos.Rotate(neuronAngleDelta * MathUtilities::degreeToRadian);
         }
     }
-    */
-    }
-
 
 	glPopMatrix();
 }
 
 Agent::~Agent()
 {
+    delete traceList;
+
+    for (uint32_t i=0; i<HH_NeuralNetwork::LAYERS;i++)
+    {
+        delete spikeCountsArrays[i];
+    }
+
+    delete [] spikeCountsArrays;
+
+    loadingVoltageDataFileBinary.close();
+    savingVoltageDataFileBinary.close();
+
     fclose(agentLog);
 }
 
-////double Agent::RotationDelta = 30;
 double Agent::radius = 300;

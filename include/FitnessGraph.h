@@ -2,7 +2,7 @@
 #define FITNESS_GRAPH_H
 
 #include "HH_NeuralNetworks.h"
-#include "Graph.h"
+#include "MembraneVoltageGraph.h"
 #include "Vector.h"
 #include "Color.h"
 
@@ -14,7 +14,6 @@ class SeriesInformation
         char seriesTitle[255];
         double spikesPerSecond;
         double totalSignalingDuration;
-        double simulationTime;
 };
 
 class FitnessGraph
@@ -28,38 +27,46 @@ class FitnessGraph
         static const uint32_t MARGIN_Y = 10;
 
         static const uint32_t MAX_INDEX = 10000;
-        ////original static const uint32_t MAX_INDEX = 30;
-        ////static const uint32_t MAX_SERIES = 31;
-        static const uint32_t MAX_SERIES = HH_NeuralNetworks::NETWORKS_COLUMNS * HH_NeuralNetworks::NETWORKS_ROWS + 1;
+        uint32_t MAX_SERIES = HH_NeuralNetworks::NETWORKS_COLUMNS * HH_NeuralNetworks::NETWORKS_ROWS + 1;
 
         static const uint32_t colorsCount = 1020;
         Color graphColors[colorsCount];
-        Color seriesColors[MAX_SERIES];
 
-        double values[MAX_SERIES][MAX_INDEX];
-        ////char* seriesTitles[MAX_SERIES];
-        SeriesInformation seriesInformation[MAX_SERIES];
+        double** values;
+        double* standardDeviationValues;
+        double avgStandardDeviation;
+
+        SeriesInformation* seriesInformation;
 
         char textBuffer[255];
 
+        bool seriesColorsSet = false;
+
     public:
-        uint32_t currentIndexes[MAX_SERIES];
+        char graphTitle[255];
+
+        uint32_t* currentIndexes;
         uint32_t currentIndex = 0;
         uint32_t seriesCount = 0;
 
         double scale = 10;
         double xScale = 30;
 
-        FitnessGraph(Vector pos);
-        //FitnessGraph();
+        uint32_t yLabels = 11;
+        double yLabelInc = 10;
+
+        bool drawAverage = false;
+        bool calcStandardDeviation = false;
+
+        FitnessGraph(Vector pos, uint32_t maxSeries = 0);
 
         void GenerateSignalStrengthColors();
 
         void SetSeriesTitle(char* seriesTitle, uint8_t seriesIndex);
         void SetSpikesPerSecond(double spikesPerSecond, uint8_t seriesIndex);
-        void SetTotalSignalingDuration(double totalSignalingDuration, uint8_t seriesIndex);
-        void SetSimulationTime(double simulationTime, uint8_t seriesIndex);
+        void SetSeriesColors(uint32_t index, double r, double g, double b);
         void AddPoint(double value, uint8_t seriesIndex, int32_t index = -1);
+        void CalculateStandardDeviationValues();
         void Draw();
         void Load(char *fileName);
         void Save(char *fileName);

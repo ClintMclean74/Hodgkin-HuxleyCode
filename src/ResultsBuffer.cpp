@@ -1,10 +1,29 @@
+/*
+ * Code System for the book "Solving Havana Syndrome and Biological Effects of RF
+ * Using the Hodgkin-Huxley Neuron Model"
+ * Copyright (C) 2022 by Clint Mclean <clint@mcleanresearchinstitute.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <string.h>
 #include "ResultsBuffer.h"
 #include "HH_NeuralNetwork.h"
 
 Result::Result(uint32_t length)
 {
-    questionBuffer = new char[255];
+    stimulusBuffer = new char[255];
     resultBuffer = new uint32_t[length];
 
     this->length = length;
@@ -14,9 +33,9 @@ void Result::Load(FILE* file)
 {
     char textBuffer[255];
     memset(textBuffer, 0, 255);
-    memset(questionBuffer, 0, 255);
+    memset(stimulusBuffer, 0, 255);
 
-    fgets(questionBuffer, 255, file);
+    fgets(stimulusBuffer, 255, file);
 
     fgets(textBuffer, 255, file);
     char *ptr = strtok(textBuffer, ",");
@@ -34,10 +53,8 @@ void Result::Load(FILE* file)
 void Result::Save(FILE* file)
 {
     char textBuffer[255];
-    ////sprintf(textBuffer, "%i\n", length);
-    ////fwrite(textBuffer, sizeof(char), strlen(textBuffer), file);
 
-    fwrite(questionBuffer, sizeof(char), strlen(questionBuffer), file);
+    fwrite(stimulusBuffer, sizeof(char), strlen(stimulusBuffer), file);
 
     fwrite("\n", sizeof(char), 1, file);
 
@@ -60,17 +77,9 @@ void Result::Save(FILE* file)
     fwrite("\n", sizeof(char), 1, file);
 }
 
-void ResultsBuffer::operator=(ResultsBuffer srcBuffer)
-{
-    for(uint32_t i=0; i<currentIndex; i++)
-    {
-        *buffer[i] = *srcBuffer.buffer[i];
-    }
-}
-
 bool Result::Equals(char* q)
 {
-    if (strcmp(questionBuffer, q) != 0)
+    if (strcmp(stimulusBuffer, q) != 0)
         return false;
 
     return true;
@@ -124,31 +133,9 @@ bool Result::Equals(char* q, HH_Neuron* result)
     return true;
 }
 
-/*bool Result::operator==(HH_Neuron* result)
-{
-    for(uint32_t i=0; i<length; i++)
-    {
-        if (buffer[i] != result[i].spikeCount)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void Result::operator=(HH_Neuron* result)
-{
-    for(uint32_t i=0; i<length; i++)
-    {
-        buffer[i] = result[i].spikeCount;
-    }
-}
-*/
-
 void Result::operator=(Result result)
 {
-    strcpy(questionBuffer, result.questionBuffer);
+    strcpy(stimulusBuffer, result.stimulusBuffer);
 
     for(uint32_t i=0; i<length; i++)
     {
@@ -158,6 +145,11 @@ void Result::operator=(Result result)
     action = result.action;
 }
 
+Result::~Result()
+{
+    delete [] stimulusBuffer;
+    delete [] resultBuffer;
+}
 
 ResultsBuffer::ResultsBuffer(uint32_t resultLength, uint32_t bufferSize)
 {
@@ -173,16 +165,16 @@ ResultsBuffer::ResultsBuffer(uint32_t resultLength, uint32_t bufferSize)
     error = 0;
 }
 
+void ResultsBuffer::operator=(ResultsBuffer srcBuffer)
+{
+    for(uint32_t i=0; i<currentIndex; i++)
+    {
+        *buffer[i] = *srcBuffer.buffer[i];
+    }
+}
 
 void ResultsBuffer::Load(FILE* file)
 {
-    /*////char textBuffer[255];
-    memset(textBuffer, 0, 255);
-
-    fgets(textBuffer, 255, file);
-    currentIndex = atoi(textBuffer);
-    */
-
     for(uint32_t i=0; i<currentIndex; i++)
     {
         buffer[i]->Load(file);
@@ -205,7 +197,7 @@ void ResultsBuffer::Add(char* q, HH_Neuron* result)
 {
     if (currentIndex<maxSize)
     {
-        strcpy(buffer[currentIndex]->questionBuffer, q);
+        strcpy(buffer[currentIndex]->stimulusBuffer, q);
 
         for(uint32_t i=0; i<buffer[currentIndex]->length; i++)
         {
@@ -222,7 +214,7 @@ void ResultsBuffer::Add(char* q, HH_Neuron* result, Action action)
 {
     if (currentIndex<maxSize)
     {
-        strcpy(buffer[currentIndex]->questionBuffer, q);
+        strcpy(buffer[currentIndex]->stimulusBuffer, q);
 
         for(uint32_t i=0; i<buffer[currentIndex]->length; i++)
         {
@@ -312,7 +304,14 @@ void ResultsBuffer::Copy(ResultsBuffer* srcBuffer)
 
     for(uint32_t i=0; i<currentIndex; i++)
     {
-        *buffer[i] = *srcBuffer->buffer[i];
+        strcpy(buffer[i]->stimulusBuffer, srcBuffer->buffer[i]->stimulusBuffer);
+
+        for(uint32_t j=0; j<buffer[i]->length; j++)
+        {
+            buffer[i]->resultBuffer[j] = srcBuffer->buffer[i]->resultBuffer[j];
+        }
+
+        buffer[i]->action = srcBuffer->buffer[i]->action;
     }
 }
 
@@ -324,7 +323,6 @@ bool ResultsBuffer::Zeros(char* str)
     {
         if (str[i] != '0')
             return false;
-
     }
 
     return true;
@@ -339,7 +337,8 @@ void ResultsBuffer::Clear()
 
 ResultsBuffer::~ResultsBuffer()
 {
+    for(uint32_t i=0; i<maxSize; i++)
+        delete buffer[i];
 
+    delete [] buffer;
 };
-
-////uint32_t Result::length = TrainingSet::resultLength;

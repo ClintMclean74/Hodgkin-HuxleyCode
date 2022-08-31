@@ -184,14 +184,18 @@
 	"TrainingSet.h"
 	"HH_Neuron.h"
 
-1643743254 c:\projects\hodgkin_huxley\hodgkin_huxley\include\fitnessgraph.h
+1660675687 c:\projects\hodgkin_huxley\hodgkin_huxley\include\fitnessgraph.h
 	"HH_NeuralNetworks.h"
-	"Graph.h"
+	"MembraneVoltageGraph.h"
 	"Vector.h"
 	"Color.h"
 	"pstdint.h"
 
-1642192344 c:\projects\hodgkin_huxley\hodgkin_huxley\include\graph.h
+1661789609 c:\projects\hodgkin_huxley\hodgkin_huxley\include\graph.h
+	"HH_NeuralNetworks.h"
+	"MembraneVoltageGraph.h"
+	"Vector.h"
+	"Color.h"
 	"pstdint.h"
 
 1623952420 c:\projects\hodgkin_huxley\hodgkin_huxley\include\pstdint.h
@@ -206,57 +210,53 @@
 	<string.h>
 	<stdint.h>
 
-1639764843 c:\projects\hodgkin_huxley\hodgkin_huxley\include\graphicsutilities.h
+1660846608 c:\projects\hodgkin_huxley\hodgkin_huxley\include\graphicsutilities.h
 
-1643134785 c:\projects\hodgkin_huxley\hodgkin_huxley\include\hh_neuralnetwork.h
+1661531271 c:\projects\hodgkin_huxley\hodgkin_huxley\include\hh_neuralnetwork.h
 	"HH_Neurons.h"
-	"TrainingQA.h"
-	"TrainingSet.h"
 	"Agent.h"
 
-1642239534 c:\projects\hodgkin_huxley\hodgkin_huxley\include\hh_neurons.h
+1661692410 c:\projects\hodgkin_huxley\hodgkin_huxley\include\hh_neurons.h
 	"HH_Neuron.h"
-	"TrainingQA.h"
 	"ResultsBuffer.h"
-	"Graph.h"
+	"MembraneVoltageGraph.h"
 	"Color.h"
 
-1645529464 c:\projects\hodgkin_huxley\hodgkin_huxley\include\hh_neuron.h
+1661015959 c:\projects\hodgkin_huxley\hodgkin_huxley\include\hh_neuron.h
 	<iostream>
 	<cmath>
 	"ChemistryValues.h"
-	"Graph.h"
+	"MembraneVoltageGraph.h"
 	"NN_Connections.h"
 
-1644941918 c:\projects\hodgkin_huxley\hodgkin_huxley\include\chemistryvalues.h
+1661106023 c:\projects\hodgkin_huxley\hodgkin_huxley\include\chemistryvalues.h
 
-1643297533 c:\projects\hodgkin_huxley\hodgkin_huxley\include\nn_connections.h
+1660846716 c:\projects\hodgkin_huxley\hodgkin_huxley\include\nn_connections.h
 	"pstdint.h"
-	"Graph.h"
+	"MembraneVoltageGraph.h"
 	"NN_Connection.h"
 	"../include/Vector.h"
 
-1637080671 c:\projects\hodgkin_huxley\hodgkin_huxley\include\nn_connection.h
+1660846704 c:\projects\hodgkin_huxley\hodgkin_huxley\include\nn_connection.h
 	<stdio.h>
 	"pstdint.h"
 
 1634579455 c:\projects\hodgkin_huxley\hodgkin_huxley\include\trainingqa.h
 	"pstdint.h"
 
-1639765911 c:\projects\hodgkin_huxley\hodgkin_huxley\include\resultsbuffer.h
+1661107321 c:\projects\hodgkin_huxley\hodgkin_huxley\include\resultsbuffer.h
 	"pstdint.h"
-	"TrainingSet.h"
 	"HH_Neuron.h"
 
 1635334225 c:\projects\hodgkin_huxley\hodgkin_huxley\include\trainingset.h
 	"pstdint.h"
 	"TrainingQA.h"
 
-1645112945 c:\projects\hodgkin_huxley\hodgkin_huxley\include\hh_neuralnetworks.h
+1660846628 c:\projects\hodgkin_huxley\hodgkin_huxley\include\hh_neuralnetworks.h
 	"HH_NeuralNetwork.h"
 	"Agents.h"
 
-1635793148 c:\projects\hodgkin_huxley\hodgkin_huxley\include\mathutilities.h
+1660846470 c:\projects\hodgkin_huxley\hodgkin_huxley\include\mathutilities.h
 	<math.h>
 	"pstdint.h"
 	"Vector.h"
@@ -264,24 +264,24 @@
 1635674859 source:c:\projects\hodgkin_huxley\hodgkin_huxley\agent.cpp
 	"Agent.h"
 
-1643130847 c:\projects\hodgkin_huxley\hodgkin_huxley\include\agent.h
+1661506497 c:\projects\hodgkin_huxley\hodgkin_huxley\include\agent.h
 	<fstream>
 	"Vector.h"
 	"FoodForAgents.h"
-	"Threading.h"
 	"ResultsBuffer.h"
 	"RecurrentList.h"
 
-1643129923 c:\projects\hodgkin_huxley\hodgkin_huxley\include\vector.h
+1660846779 c:\projects\hodgkin_huxley\hodgkin_huxley\include\vector.h
 
 1635674973 source:c:\projects\hodgkin_huxley\hodgkin_huxley\vector.cpp
 	"Vector.h"
 
-1643737146 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\agent.cpp
+1661506497 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\agent.cpp
 	<math.h>
 	<algorithm>
 	<string.h>
 	<windows.h>
+	<io.h>
 	"Environment.h"
 	"HH_NeuralNetwork.h"
 	"Agent.h"
@@ -290,11 +290,11 @@
 	"Environment.h"
 	"Simulation.h"
 	"Agents.h"
-	"GraphicsUtilities.h"
+	"GraphicsAndUI.h"
 
 1625832772 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\chemistryvalues.cpp
 
-1643743346 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\fitnessgraph.cpp
+1660413642 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\fitnessgraph.cpp
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -302,79 +302,93 @@
 	"FitnessGraph.h"
 	"GraphicsUtilities.h"
 
-1635864168 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\graph.cpp
-	"Graph.h"
-
-1645530930 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\hh_neuralnetwork.cpp
+1661948321 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\graph.cpp
+	<stdio.h>
+	<stdlib.h>
 	<string.h>
+	"GL/glew.h"
+	"Graph.h"
+	"GraphicsAndUI.h"
+	"Simulation.h"
+
+1661957095 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\hh_neuralnetwork.cpp
+	<string.h>
+	<random>
+	<chrono>
 	"GL/glew.h"
 	"HH_NeuralNetwork.h"
 	"HH_NeuralNetworks.h"
 	"MathUtilities.h"
+	"Simulation.h"
 
-1643610348 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\hh_neuralnetworks.cpp
+1661106129 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\hh_neuralnetworks.cpp
 	<string.h>
 	"HH_NeuralNetworks.h"
 	"HH_NeuralNetwork.h"
 	"GL/glew.h"
-	"GraphicsUtilities.h"
+	"Simulation.h"
 
-1642517944 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\hh_neuron.cpp
+1661874659 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\hh_neuron.cpp
 	<math.h>
 	<string.h>
 	"HH_Neuron.h"
 	"GL/glew.h"
-	"GraphicsUtilities.h"
+	"GraphicsAndUI.h"
 	"HH_NeuralNetwork.h"
 	"HH_NeuralNetworks.h"
 	"MathUtilities.h"
 	"Simulation.h"
 
-1643135008 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\hh_neurons.cpp
+1661957106 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\hh_neurons.cpp
 	<string.h>
 	<sysinfoapi.h>
+	<random>
+	<chrono>
 	"GL/glew.h"
-	"GraphicsUtilities.h"
+	"GraphicsAndUI.h"
 	"HH_Neurons.h"
 	"HH_NeuralNetwork.h"
 	"HH_NeuralNetworks.h"
 	"Simulation.h"
+	"MathUtilities.h"
 
-1643439992 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\graphicsutilities.cpp
+1660849028 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\graphicsutilities.cpp
 	<math.h>
 	"GL/glut.h"
-	"GraphicsUtilities.h"
 
-1642511754 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\mathutilities.cpp
+1661595045 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\mathutilities.cpp
 	<string>
 	<math.h>
 	"pstdint.h"
 	"MathUtilities.h"
 
-1645530880 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\main.cpp
+1661947219 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\main.cpp
 	<iostream>
 	<cmath>
 	<process.h>
-	<time.h>
 	<tgmath.h>
+	<string.h>
+	<random>
+	<io.h>
+	<limits>
 	"GL/glew.h"
 	"GL/glut.h"
-	"HH_NeuralNetworks.h"
-	"Graph.h"
-	"GraphicsUtilities.h"
-	"TrainingSet.h"
-	"FitnessGraph.h"
 	"Agents.h"
+	"HH_NeuralNetworks.h"
+	"MembraneVoltageGraph.h"
+	"Graph.h"
 	"FoodForAgents.h"
 	"Simulation.h"
 	"Environment.h"
+	"GraphicsAndUI.h"
+	"MathUtilities.h"
 
-1636482778 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\nn_connection.cpp
+1660846698 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\nn_connection.cpp
 	<string.h>
 	<stdlib.h>
 	"NN_Connection.h"
 
-1643297546 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\nn_connections.cpp
+1660846709 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\nn_connections.cpp
 	<string.h>
 	"NN_Connections.h"
 	"HH_Neurons.h"
@@ -383,7 +397,7 @@
 	"Simulation.h"
 	"HH_NeuralNetwork.h"
 
-1639765930 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\resultsbuffer.cpp
+1660846735 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\resultsbuffer.cpp
 	<string.h>
 	"ResultsBuffer.h"
 	"HH_NeuralNetwork.h"
@@ -401,11 +415,11 @@
 	"TrainingSet.h"
 	"HH_NeuralNetwork.h"
 
-1643129920 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\vector.cpp
+1660846774 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\vector.cpp
 	<math.h>
 	"Vector.h"
 
-1643043642 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\agents.cpp
+1660846560 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\agents.cpp
 	<windows.h>
 	"Environment.h"
 	"Agents.h"
@@ -413,21 +427,21 @@
 	"HH_NeuralNetwork.h"
 	"Simulation.h"
 
-1643043645 c:\projects\hodgkin_huxley\hodgkin_huxley\include\agents.h
+1660846572 c:\projects\hodgkin_huxley\hodgkin_huxley\include\agents.h
 	"pstdint.h"
 	"Agent.h"
 
-1643047112 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\food.cpp
+1660846531 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\food.cpp
 	"Food.h"
 	"GL/glew.h"
 	"MathUtilities.h"
 
-1643046601 c:\projects\hodgkin_huxley\hodgkin_huxley\include\food.h
+1660846585 c:\projects\hodgkin_huxley\hodgkin_huxley\include\food.h
 	"pstdint.h"
 	"Color.h"
 	"Vector.h"
 
-1643737166 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\foodforagents.cpp
+1660846541 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\foodforagents.cpp
 	<stdio.h>
 	<stdlib.h>
 	"Environment.h"
@@ -436,34 +450,43 @@
 	"Agents.h"
 	"Simulation.h"
 
-1643047031 c:\projects\hodgkin_huxley\hodgkin_huxley\include\foodforagents.h
+1660846546 c:\projects\hodgkin_huxley\hodgkin_huxley\include\foodforagents.h
 	<fstream>
 	"pstdint.h"
 	"Color.h"
 	"Food.h"
 
-1637169046 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\environment.cpp
+1660846554 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\environment.cpp
 	"Environment.h"
 
-1637169061 c:\projects\hodgkin_huxley\hodgkin_huxley\include\environment.h
+1660846580 c:\projects\hodgkin_huxley\hodgkin_huxley\include\environment.h
 	"pstdint.h"
 	"FoodForAgents.h"
 
-1635874557 c:\projects\hodgkin_huxley\hodgkin_huxley\include\color.h
+1660846576 c:\projects\hodgkin_huxley\hodgkin_huxley\include\color.h
 
-1637168226 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\color.cpp
+1660846514 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\color.cpp
 	"Color.h"
 
-1645530858 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\simulation.cpp
+1661956965 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\simulation.cpp
+	<string.h>
+	<time.h>
+	<io.h>
+	<sysinfoapi.h>
+	<fileapi.h>
 	"Simulation.h"
-	"Threading.h"
+	"Environment.h"
 	"HH_NeuralNetwork.h"
+	"GraphicsAndUI.h"
 
-1643563128 c:\projects\hodgkin_huxley\hodgkin_huxley\include\simulation.h
-	"Threading.h"
+1661957081 c:\projects\hodgkin_huxley\hodgkin_huxley\include\simulation.h
+	<random>
+	<chrono>
 	"pstdint.h"
+	"HH_NeuralNetworks.h"
+	"ResultsAndGraphs.h"
 
-1637001032 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\threading.cpp
+1646585938 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\threading.cpp
 	<process.h>
 	"Threading.h"
 
@@ -474,9 +497,34 @@
 	"TrainingSet.h"
 	"HH_Neuron.h"
 
-1643043717 c:\projects\hodgkin_huxley\hodgkin_huxley\include\recurrentlist.h
+1660846730 c:\projects\hodgkin_huxley\hodgkin_huxley\include\recurrentlist.h
 	"pstdint.h"
 
-1643044292 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\recurrentlist.cpp
+1660846727 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\recurrentlist.cpp
 	"RecurrentList.h"
+
+1661942000 c:\projects\hodgkin_huxley\hodgkin_huxley\include\membranevoltagegraph.h
+	"pstdint.h"
+
+1660846684 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\membranevoltagegraph.cpp
+	"MembraneVoltageGraph.h"
+
+1661941911 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\graphicsandui.cpp
+	"GraphicsAndUI.h"
+	"GL/glew.h"
+	"GL/glut.h"
+	"Simulation.h"
+	"Environment.h"
+	"HH_NeuralNetworks.h"
+
+1661794875 c:\projects\hodgkin_huxley\hodgkin_huxley\include\graphicsandui.h
+	"Vector.h"
+
+1661946774 source:c:\projects\hodgkin_huxley\hodgkin_huxley\src\resultsandgraphs.cpp
+	<string.h>
+	"ResultsAndGraphs.h"
+	"Simulation.h"
+
+1661791870 c:\projects\hodgkin_huxley\hodgkin_huxley\include\resultsandgraphs.h
+	"Graph.h"
 

@@ -5,13 +5,26 @@
 #include "FitnessGraph.h"
 #include "GraphicsUtilities.h"
 
-FitnessGraph::FitnessGraph(Vector pos)
-//FitnessGraph::FitnessGraph()
+typedef double* double_ptr;
+
+FitnessGraph::FitnessGraph(Vector pos, uint32_t maxSeries)
 {
+    if (maxSeries != 0)
+        MAX_SERIES = maxSeries;
+
+    values = new double_ptr[MAX_SERIES];
+    standardDeviationValues = new double[MAX_INDEX];
+    seriesInformation = new SeriesInformation[MAX_SERIES];
+    currentIndexes = new uint32_t[MAX_SERIES];
+
+    memset(graphTitle, 0, 255);
+
     this->pos = pos;
 
     for(uint8_t j = 0; j < MAX_SERIES; j++)
     {
+        values[j] = new double[MAX_INDEX];
+
         for(uint32_t i = 0; i < MAX_INDEX; i++)
         {
             values[j][i] = 0;
@@ -22,30 +35,7 @@ FitnessGraph::FitnessGraph(Vector pos)
         currentIndexes[j] = 0;
     }
 
-    /*////for(uint8_t j = 0; j < MAX_SERIES; j++)
-    {
-        graphColors[j].r = (double) rand() / RAND_MAX;
-        graphColors[j].g = (double) rand() / RAND_MAX;
-        graphColors[j].b = (double) rand() / RAND_MAX;
-    }*/
-
     GenerateSignalStrengthColors();
-
-    seriesColors[0].r = 1.0;
-    seriesColors[0].g = 0.0;
-	seriesColors[0].b = 0.0;
-
-	seriesColors[1].r = 0.0;
-    seriesColors[1].g = 1.0;
-	seriesColors[1].b = 0.0;
-
-	seriesColors[2].r = 1.0;
-    seriesColors[2].g = 1.0;
-	seriesColors[2].b = 0.0;
-
-	seriesColors[3].r = 255.0/255;
-    seriesColors[3].g = 145.0/255;
-	seriesColors[3].b = 44.0/255;
 }
 
 void FitnessGraph::GenerateSignalStrengthColors()
@@ -66,34 +56,32 @@ void FitnessGraph::GenerateSignalStrengthColors()
 
 		switch (stage)
 		{
-		case (0):
-			g++;
+            case (0):
+                g++;
 
-			if (g == 255)
-				stage++;
+                if (g == 255)
+                    stage++;
 			break;
 
+            case (1):
+                r--;
 
-		case (1):
-			r--;
+                if (r == 0)
+                    stage++;
+            break;
 
-			if (r == 0)
-				stage++;
-			break;
+            case (2):
+                b++;
 
+                if (b == 255)
+                    stage++;
+            break;
 
-		case (2):
-			b++;
+            case (3):
+                g--;
 
-			if (b == 255)
-				stage++;
-			break;
-
-		case (3):
-			g--;
-
-			if (g == 0)
-				stage++;
+                if (g == 0)
+                    stage++;
 			break;
 		}
 	}
@@ -109,45 +97,64 @@ void FitnessGraph::SetSpikesPerSecond(double spikesPerSecond, uint8_t seriesInde
     seriesInformation[seriesIndex].spikesPerSecond = spikesPerSecond;
 }
 
-void FitnessGraph::SetTotalSignalingDuration(double totalSignalingDuration, uint8_t seriesIndex)
+void FitnessGraph::SetSeriesColors(uint32_t index, double r, double g, double b)
 {
-    seriesInformation[seriesIndex].totalSignalingDuration = totalSignalingDuration;
-}
+    graphColors[index].r = r;
+    graphColors[index].g = g;
+	graphColors[index].b = b;
 
-void FitnessGraph::SetSimulationTime(double simulationTime, uint8_t seriesIndex)
-{
-    seriesInformation[seriesIndex].simulationTime = simulationTime;
+	seriesColorsSet = true;
 }
 
 void FitnessGraph::AddPoint(double value, uint8_t seriesIndex, int32_t index)
 {
-    if (index != -1)
+    if (index != -1) //if the x index is specified then it's used otherwise currentIndexes[seriesIndex] is used and incremented each time
         currentIndexes[seriesIndex] = index;
 
     if (currentIndexes[seriesIndex] == MAX_INDEX)
         currentIndexes[seriesIndex] = 0;
 
-    //values[currentIndex].x = currentIndex;
+
     values[seriesIndex][currentIndexes[seriesIndex]] = value;
-    //values[currentIndex].z = 0;
-
-    ////values[0][seriesIndex] = value;
-
-    /*////if (index != -1)
-        currentIndex = index;
-
-    if (currentIndex == MAX_INDEX)
-        currentIndex = 0;
-
-    //values[currentIndex].x = currentIndex;
-    values[seriesIndex][currentIndexes[seriesIndex]] = value;
-    */
 
     currentIndexes[seriesIndex]++;
-    ////currentIndex++;
 
     if ((seriesIndex + 1) > seriesCount)
         seriesCount = seriesIndex + 1;
+}
+
+void FitnessGraph::CalculateStandardDeviationValues()
+{
+    double totalValues[MAX_INDEX];
+    memset(totalValues, 0, MAX_INDEX * 4);
+
+    for(uint8_t j = 0; j < seriesCount; j++)
+    {
+        for(uint32_t i = 0; i < currentIndexes[j]; i++)
+        {
+            totalValues[i] += values[j][i];
+        }
+    }
+
+
+    double totalDif, dif, totalStandardDeviation;
+
+    for(uint32_t i = 0; i < currentIndexes[0]; i++)
+    {
+        totalDif = 0;
+
+        for(uint8_t j = 0; j < seriesCount; j++)
+        {
+            dif = values[j][i] - (totalValues[i] / seriesCount);
+            totalDif += dif * dif;
+        }
+
+        standardDeviationValues[i] = sqrt(totalDif/seriesCount);
+
+        totalStandardDeviation += standardDeviationValues[i];
+    }
+
+    avgStandardDeviation = totalStandardDeviation/currentIndexes[0];
 }
 
 void FitnessGraph::Draw()
@@ -170,9 +177,6 @@ void FitnessGraph::Draw()
 	glVertex2f(0, FitnessGraph::HEIGHT);
 	glEnd();
 
-
-	uint32_t yLabels = 11;
-	double yLabelInc = 10;
 	double yLabelValue = 0;
 
 	double x = -(double) FitnessGraph::MARGIN_X;
@@ -189,7 +193,7 @@ void FitnessGraph::Draw()
     }
 
 
-    uint32_t xLabels = 30;
+    uint32_t xLabels = 100;
 	double xLabelInc = 1;
 	double xLabelValue = 0;
 
@@ -207,23 +211,57 @@ void FitnessGraph::Draw()
     }
 
     glLineWidth(2);
-
     uint32_t colorIndex;
 
-    ////for(uint8_t j = 0; j < MAX_SERIES; j++)
+
+    double totalValues[MAX_INDEX];
+
+    memset(totalValues, 0, MAX_INDEX * 4);
+
     for(uint8_t j = 0; j < seriesCount; j++)
     {
+        if (seriesColorsSet)
+            colorIndex = j;
+        else
+            colorIndex = ((double) (MAX_SERIES - 1 - j)) / (MAX_SERIES - 1) * (colorsCount - 1);
 
-        colorIndex = ((double) (MAX_SERIES - 1 - j)) / (MAX_SERIES - 1) * (colorsCount - 1);
         glColor3f(graphColors[colorIndex].r, graphColors[colorIndex].g, graphColors[colorIndex].b);
-
-
-        ////glColor3f(seriesColors[j].r, seriesColors[j].g, seriesColors[j].b);
 
         glBegin(GL_LINE_STRIP);
         for(uint32_t i = 0; i < MAX_INDEX; i++)
         {
             glVertex2f(i * xScale, values[j][i] * scale);
+
+            totalValues[i] += values[j][i];
+        }
+        glEnd();
+
+
+        glColor3f(0, 1, 0);
+    }
+
+    if (drawAverage)
+    {
+        glColor3f(0, 1, 0);
+        glBegin(GL_LINE_STRIP);
+        for(uint32_t i = 0; i < MAX_INDEX; i++)
+        {
+            glVertex2f(i * xScale, totalValues[i] / seriesCount * scale);
+        }
+        glEnd();
+
+        calcStandardDeviation = true;
+    }
+
+    if (calcStandardDeviation)
+    {
+        CalculateStandardDeviationValues();
+
+        glColor3f(255.0/255, 145.0/255, 44.0/255);
+        glBegin(GL_LINE_STRIP);
+        for(uint32_t i = 0; i < MAX_INDEX; i++)
+        {
+            glVertex2f(i * xScale, standardDeviationValues[i] * scale);
         }
         glEnd();
     }
@@ -236,41 +274,35 @@ void FitnessGraph::Load(char *fileName)
     FILE* file = fopen(fileName, "r");
     if (file)
     {
-    char textBuffer[9999];
-    memset(textBuffer, 0, 9999);
+        char textBuffer[9999];
+        memset(textBuffer, 0, 9999);
 
-    char *ptr;
-    double simTemperature, value;
-    uint8_t seriesIndex = 0, index = 0;;
+        char *ptr;
+        double simTemperature, value;
+        uint8_t seriesIndex = 0, index = 0;;
 
-    while (fgets(textBuffer, 9999, file))
-    {
-        ptr = strtok(textBuffer, ",");
-        SetSeriesTitle(ptr, seriesIndex);
-
-        ptr = strtok(NULL, ",");
-        SetSpikesPerSecond(atof(ptr), seriesIndex);
-
-        ptr = strtok(NULL, ",");
-        SetTotalSignalingDuration(atof(ptr), seriesIndex);
-
-        ptr = strtok(NULL, ",");
-        SetSimulationTime(atof(ptr), seriesIndex);
-
-        index = 0;
-        while (ptr != NULL)
+        while (fgets(textBuffer, 9999, file))
         {
-            ptr = strtok (NULL, ",");
+            ptr = strtok(textBuffer, ",");
+            SetSeriesTitle(ptr, seriesIndex);
 
-            value = atof(ptr);
+            ptr = strtok(NULL, ",");
+            SetSpikesPerSecond(atof(ptr), seriesIndex);
 
-            AddPoint(value, seriesIndex, index++);
+            index = 0;
+            while (ptr != NULL)
+            {
+                ptr = strtok (NULL, ",");
+
+                value = atof(ptr);
+
+                AddPoint(value, seriesIndex, index++);
+            }
+
+            seriesIndex++;
         }
 
-        seriesIndex++;
-    }
-
-    fclose(file);
+        fclose(file);
     }
 }
 
@@ -281,59 +313,81 @@ void FitnessGraph::Save(char *fileName)
     char textBuffer[255];
     uint32_t length;
 
-    for(uint8_t j = 0; j < MAX_SERIES; j++)
+    double totalValues[MAX_INDEX];
+    memset(totalValues, 0, MAX_INDEX * 4);
+
+    sprintf(textBuffer, "%s", graphTitle);
+    length = strlen(textBuffer);
+    fwrite(textBuffer, sizeof(char), length, file);
+
+    for(uint8_t j = 0; j < seriesCount; j++)
     {
-        /*double temperature = 37.0001;
-        sprintf(textBuffer, "%f", temperature);
-        length = strlen(textBuffer);
-        fwrite(textBuffer, sizeof(char), length, file);
-        */
-
-        ////if (strcmp(seriesInformation[j].seriesTitle, "") != 0)
-        {
-
         if (currentIndexes[j] > 0)
         {
-        sprintf(textBuffer, "%s, ", seriesInformation[j].seriesTitle);
-        length = strlen(textBuffer);
-        fwrite(textBuffer, sizeof(char), length, file);
+            sprintf(textBuffer, "%s,", seriesInformation[j].seriesTitle);
+            length = strlen(textBuffer);
+            fwrite(textBuffer, sizeof(char), length, file);
 
-        /*////
-        sprintf(textBuffer, "%f, ", seriesInformation[j].spikesPerSecond);
-        length = strlen(textBuffer);
-        fwrite(textBuffer, sizeof(char), length, file);
+            for(uint32_t i = 0; i < currentIndexes[j]; i++)
+            {
+                if (i > 0)
+                {
+                    fwrite(",", sizeof(char), 1, file);
+                }
 
-        sprintf(textBuffer, "%f, ", seriesInformation[j].totalSignalingDuration);
-        length = strlen(textBuffer);
-        fwrite(textBuffer, sizeof(char), length, file);
+                sprintf(textBuffer, "%f", values[j][i]);
+                length = strlen(textBuffer);
+                fwrite(textBuffer, sizeof(char), length, file);
 
-        sprintf(textBuffer, "%f", seriesInformation[j].simulationTime);
-        length = strlen(textBuffer);
-        fwrite(textBuffer, sizeof(char), length, file);
-        */
+                totalValues[i] += values[j][i];
+            }
 
-        ////for(uint32_t i = 0; i < MAX_INDEX; i++)
+            fwrite("\n", sizeof(char), 1, file);
+        }
+    }
 
-        for(uint32_t i = 0; i < currentIndexes[j]; i++)
+    if (currentIndexes[0] > 0)
+    {
+        fwrite("avg:,", sizeof(char), 5, file);
+        for(uint32_t i = 0; i < currentIndexes[0]; i++)
         {
             if (i > 0)
             {
-                sprintf(textBuffer, ", ");
-                length = strlen(textBuffer);
-                fwrite(", ", sizeof(char), 2, file);
+                fwrite(",", sizeof(char), 1, file);
             }
 
-            if (values[j][i] > 0)
-                int grc = 1;
+            sprintf(textBuffer, "%f", totalValues[i] / seriesCount);
+            length = strlen(textBuffer);
+            fwrite(textBuffer, sizeof(char), length, file);
+        }
+        fwrite("\n", sizeof(char), 1, file);
+    }
 
-            sprintf(textBuffer, "%f", values[j][i]);
+    if (calcStandardDeviation)
+    {
+        CalculateStandardDeviationValues();
+
+        sprintf(textBuffer, "standard deviation:,");
+        length = strlen(textBuffer);
+        fwrite(textBuffer, sizeof(char), length, file);
+
+        for(uint32_t i = 0; i < currentIndexes[0]; i++)
+        {
+            if (i > 0)
+            {
+                fwrite(",", sizeof(char), 1, file);
+            }
+
+            sprintf(textBuffer, "%f", standardDeviationValues[i]);
             length = strlen(textBuffer);
             fwrite(textBuffer, sizeof(char), length, file);
         }
 
         fwrite("\n", sizeof(char), 1, file);
-        }
-        }
+        sprintf(textBuffer, "avg standard deviation: %f", avgStandardDeviation);
+        length = strlen(textBuffer);
+        fwrite(textBuffer, sizeof(char), length, file);
+        fwrite("\n", sizeof(char), 1, file);
     }
 
     fclose(file);
