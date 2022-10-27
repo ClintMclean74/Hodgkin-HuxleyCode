@@ -1,0 +1,16 @@
+rfTemperaturePulseDurations:32.86
+rfTemperaturePulseIntervals:1000
+rfInducedTemperaturesFromPulsesForAgents:6.301
+NETWORKS_ROWS:2
+NETWORKS_COLUMNS:1
+LAYERS:1
+layer1Length:1
+foodRightStimulus:1
+resetHHDuration:30
+stimulusValue:1.6445
+stimDuration:20
+viewPos:980,30,-15000
+fov:2
+lag:1
+saveRootFolder:results/anode_break_timing/anode_break_timing_lagging
+saveMembraneVoltagesTraceGraphFolder:trace_membrane_voltages

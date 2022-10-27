@@ -2,124 +2,14 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
-	<File name="include\NN_Connection.h" open="1" top="0" tabpos="28" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="874" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="src\MathUtilities.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1458" topLine="35" />
-		</Cursor>
-	</File>
-	<File name="include\HH_NeuralNetworks.h" open="1" top="0" tabpos="32" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2697" topLine="61" />
-		</Cursor>
-	</File>
-	<File name="src\main.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="10808" topLine="234" />
-		</Cursor>
-	</File>
-	<File name="include\Simulation.h" open="1" top="0" tabpos="22" split="0" active="1" splitpos="0" zoom_1="1" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1548" topLine="31" />
-		</Cursor>
-	</File>
-	<File name="include\Agents.h" open="1" top="0" tabpos="21" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1594" topLine="30" />
-		</Cursor>
-	</File>
-	<File name="src\Food.cpp" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="721" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="src\HH_NeuralNetwork.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4565" topLine="147" />
-		</Cursor>
-	</File>
-	<File name="include\Graph.h" open="1" top="0" tabpos="41" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1614" topLine="47" />
-		</Cursor>
-	</File>
-	<File name="src\ResultsBuffer.cpp" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1192" topLine="25" />
-		</Cursor>
-	</File>
-	<File name="src\Agents.cpp" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1802" topLine="68" />
-		</Cursor>
-	</File>
-	<File name="src\ResultsAndGraphs.cpp" open="1" top="0" tabpos="45" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="14588" topLine="226" />
-		</Cursor>
-	</File>
-	<File name="include\FoodForAgents.h" open="1" top="0" tabpos="31" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="874" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="src\Environment.cpp" open="1" top="0" tabpos="33" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="934" topLine="16" />
-		</Cursor>
-	</File>
-	<File name="include\ChemistryValues.h" open="1" top="0" tabpos="23" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="874" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="include\ResultsAndGraphs.h" open="1" top="0" tabpos="44" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1811" topLine="42" />
-		</Cursor>
-	</File>
 	<File name="include\HH_Neuron.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="-2" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="6295" topLine="187" />
+			<Cursor1 position="1280" topLine="26" />
 		</Cursor>
 	</File>
-	<File name="src\NN_Connections.cpp" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+	<File name="src\MembraneVoltageGraph.cpp" open="1" top="0" tabpos="24" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="467" topLine="80" />
-		</Cursor>
-	</File>
-	<File name="src\Graph.cpp" open="1" top="0" tabpos="40" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="13966" topLine="528" />
-		</Cursor>
-	</File>
-	<File name="include\Color.h" open="1" top="0" tabpos="37" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="874" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="src\Agent.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="-2" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4996" topLine="143" />
-		</Cursor>
-	</File>
-	<File name="src\HH_Neuron.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="9352" topLine="320" />
-		</Cursor>
-	</File>
-	<File name="include\HH_NeuralNetwork.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2864" topLine="70" />
-		</Cursor>
-	</File>
-	<File name="src\Simulation.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="17106" topLine="504" />
+			<Cursor1 position="394" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="include\Vector.h" open="1" top="0" tabpos="36" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -127,59 +17,9 @@
 			<Cursor1 position="874" topLine="4" />
 		</Cursor>
 	</File>
-	<File name="include\Food.h" open="1" top="0" tabpos="39" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\HH_NeuralNetworks.cpp" open="1" top="0" tabpos="34" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="874" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="src\HH_Neurons.cpp" open="1" top="1" tabpos="7" split="0" active="1" splitpos="0" zoom_1="-2" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3398" topLine="76" />
-		</Cursor>
-	</File>
-	<File name="include\MathUtilities.h" open="1" top="0" tabpos="27" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="688" topLine="7" />
-		</Cursor>
-	</File>
-	<File name="include\pstdint.h" open="1" top="0" tabpos="29" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="28701" topLine="843" />
-		</Cursor>
-	</File>
-	<File name="include\HH_Neurons.h" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2443" topLine="60" />
-		</Cursor>
-	</File>
-	<File name="src\MembraneVoltageGraph.cpp" open="1" top="0" tabpos="24" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="503" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="include\ResultsBuffer.h" open="1" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="951" topLine="17" />
-		</Cursor>
-	</File>
-	<File name="include\Environment.h" open="1" top="0" tabpos="38" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="src\FoodForAgents.cpp" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1960" topLine="49" />
-		</Cursor>
-	</File>
-	<File name="src\Vector.cpp" open="1" top="0" tabpos="30" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="467" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="src\Color.cpp" open="1" top="0" tabpos="25" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="628" topLine="2" />
+			<Cursor1 position="7821" topLine="223" />
 		</Cursor>
 	</File>
 	<File name="include\GraphicsAndUI.h" open="1" top="0" tabpos="42" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -187,44 +27,204 @@
 			<Cursor1 position="1953" topLine="54" />
 		</Cursor>
 	</File>
-	<File name="src\NN_Connection.cpp" open="1" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="721" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="include\RecurrentList.h" open="1" top="0" tabpos="35" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="874" topLine="4" />
-		</Cursor>
-	</File>
-	<File name="include\MembraneVoltageGraph.h" open="1" top="0" tabpos="26" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1305" topLine="22" />
-		</Cursor>
-	</File>
-	<File name="include\Agent.h" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2560" topLine="95" />
-		</Cursor>
-	</File>
 	<File name="src\RecurrentList.cpp" open="1" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="870" topLine="4" />
 		</Cursor>
 	</File>
-	<File name="src\GraphicsAndUI.cpp" open="1" top="0" tabpos="43" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
+	<File name="include\MathUtilities.h" open="1" top="0" tabpos="27" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="10686" topLine="346" />
+			<Cursor1 position="688" topLine="7" />
 		</Cursor>
 	</File>
-	<File name="src\HH_NeuralNetworks.cpp" open="1" top="0" tabpos="34" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
+	<File name="src\GraphicsAndUI.cpp" open="1" top="0" tabpos="43" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1003" topLine="10" />
+			<Cursor1 position="11476" topLine="350" />
+		</Cursor>
+	</File>
+	<File name="include\Graph.h" open="1" top="0" tabpos="41" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1329" topLine="40" />
+		</Cursor>
+	</File>
+	<File name="include\ResultsAndGraphs.h" open="1" top="0" tabpos="44" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2289" topLine="48" />
+		</Cursor>
+	</File>
+	<File name="src\MathUtilities.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1458" topLine="35" />
+		</Cursor>
+	</File>
+	<File name="src\FoodForAgents.cpp" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4859" topLine="120" />
+		</Cursor>
+	</File>
+	<File name="include\Color.h" open="1" top="0" tabpos="37" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="874" topLine="4" />
+		</Cursor>
+	</File>
+	<File name="src\Simulation.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3632" topLine="114" />
+		</Cursor>
+	</File>
+	<File name="include\Agent.h" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2790" topLine="101" />
+		</Cursor>
+	</File>
+	<File name="src\NN_Connections.cpp" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3999" topLine="117" />
+		</Cursor>
+	</File>
+	<File name="src\Agents.cpp" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3736" topLine="134" />
+		</Cursor>
+	</File>
+	<File name="include\pstdint.h" open="1" top="0" tabpos="29" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="28701" topLine="843" />
+		</Cursor>
+	</File>
+	<File name="include\NN_Connection.h" open="1" top="0" tabpos="28" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="874" topLine="4" />
+		</Cursor>
+	</File>
+	<File name="src\NN_Connection.cpp" open="1" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="721" topLine="4" />
+		</Cursor>
+	</File>
+	<File name="include\MembraneVoltageGraph.h" open="1" top="0" tabpos="26" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1209" topLine="18" />
+		</Cursor>
+	</File>
+	<File name="include\HH_NeuralNetwork.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2864" topLine="68" />
+		</Cursor>
+	</File>
+	<File name="include\ResultsBuffer.h" open="1" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="951" topLine="17" />
+		</Cursor>
+	</File>
+	<File name="src\main.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9985" topLine="214" />
+		</Cursor>
+	</File>
+	<File name="src\Environment.cpp" open="1" top="0" tabpos="33" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="934" topLine="16" />
+		</Cursor>
+	</File>
+	<File name="include\FoodForAgents.h" open="1" top="0" tabpos="31" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1573" topLine="35" />
+		</Cursor>
+	</File>
+	<File name="src\Vector.cpp" open="1" top="0" tabpos="30" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2205" topLine="90" />
+		</Cursor>
+	</File>
+	<File name="include\Environment.h" open="1" top="0" tabpos="38" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="635" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="src\Color.cpp" open="1" top="0" tabpos="25" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="628" topLine="2" />
+		</Cursor>
+	</File>
+	<File name="src\Graph.cpp" open="1" top="0" tabpos="40" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4961" topLine="177" />
 		</Cursor>
 	</File>
 	<File name="include\NN_Connections.h" open="1" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="874" topLine="4" />
+		</Cursor>
+	</File>
+	<File name="src\HH_Neurons.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="2" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8439" topLine="297" />
+		</Cursor>
+	</File>
+	<File name="include\HH_NeuralNetworks.h" open="1" top="0" tabpos="32" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1275" topLine="28" />
+		</Cursor>
+	</File>
+	<File name="include\Simulation.h" open="1" top="0" tabpos="22" split="0" active="1" splitpos="0" zoom_1="1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3526" topLine="79" />
+		</Cursor>
+	</File>
+	<File name="src\HH_NeuralNetwork.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4948" topLine="172" />
+		</Cursor>
+	</File>
+	<File name="include\Agents.h" open="1" top="0" tabpos="21" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1594" topLine="30" />
+		</Cursor>
+	</File>
+	<File name="src\ResultsBuffer.cpp" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1192" topLine="25" />
+		</Cursor>
+	</File>
+	<File name="include\HH_Neurons.h" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2437" topLine="71" />
+		</Cursor>
+	</File>
+	<File name="src\Agent.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="-2" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="20146" topLine="534" />
+		</Cursor>
+	</File>
+	<File name="include\Food.h" open="1" top="0" tabpos="39" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="874" topLine="4" />
+		</Cursor>
+	</File>
+	<File name="include\RecurrentList.h" open="1" top="0" tabpos="35" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="484" topLine="4" />
+		</Cursor>
+	</File>
+	<File name="src\ResultsAndGraphs.cpp" open="1" top="0" tabpos="45" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="16419" topLine="266" />
+		</Cursor>
+	</File>
+	<File name="src\Food.cpp" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="721" topLine="4" />
+		</Cursor>
+	</File>
+	<File name="include\ChemistryValues.h" open="1" top="0" tabpos="23" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1204" topLine="15" />
+		</Cursor>
+	</File>
+	<File name="src\HH_Neuron.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10529" topLine="365" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

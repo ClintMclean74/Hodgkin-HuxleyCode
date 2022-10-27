@@ -1,0 +1,27 @@
+training:false
+testingLayerErrors:true
+rfTemperaturePulseDurations:10, 7, 5, 3, 1
+rfTemperaturePulseIntervals:0,0,0,0,0
+rfInducedTemperaturesFromPulsesForAgents:16.3
+rfInducedTemperatureInstant:true
+NETWORKS_ROWS:2
+NETWORKS_COLUMNS:1
+LAYERS:2
+layer1Length:1
+hiddenLayerLength:1
+resultLayerLength:1
+saveMembraneVoltagesTraceGraphTime:17
+foodRightStimulus:100
+foodForwardStimulus:100
+foodLeftStimulus:100
+resetHHDuration:10
+synapticStimulusIntervalFromStimStart:700
+stimulusValue:10
+stimDuration:1
+setWeightValue:true
+weightValue:0.7
+viewPos:-2445,280,-15000
+fov:13
+lag:1
+saveRootFolder:results/10_5mA_6_3C_activates_16_3C_spike_activates_with_delay_at_post_synaptic_neuron_only6_3Cactivates
+saveMembraneVoltagesTraceGraphFolder:trace_membrane_voltages

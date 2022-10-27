@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="settings/nn_amplification_layer_activity_testing.txt" />
+				<Option parameters="settings/nn_amplification_layer_activity_testing_with_noise.txt" />
 				<Compiler>
 					<Add option="-m32" />
 					<Add option="-g" />

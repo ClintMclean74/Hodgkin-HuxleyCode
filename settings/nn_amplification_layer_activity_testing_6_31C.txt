@@ -1,0 +1,26 @@
+training:true
+testingLayerErrors:true
+nnAvgsTesting:true
+rfTemperaturePulseDurations:10, 10, 10, 10, 10
+rfTemperaturePulseIntervals:10, 7, 5, 3, 1
+rfInducedTemperaturesFromPulsesForAgents:6.31
+averagingPulseSequencesResults:false
+//uncomment and use this setting to reproduce the same experiment, seeds the random number generator so that the same random numbers are generated that occurred in the original experiment randomSeed:291614234
+randomSeed:291614234
+NETWORKS_ROWS:2
+NETWORKS_COLUMNS:1
+LAYERS:10
+layer1Length:3
+hiddenLayerLength:30
+resultLayerLength:30
+saveMembraneVoltagesTraceGraphTime:0
+foodRightStimulus:001
+foodForwardStimulus:010
+foodLeftStimulus:100
+resetHHDuration:10
+synapticStimulusIntervalFromStimStart:70
+stimulusValue:10
+stimDuration:1
+viewPos:-14145,-6745,-15000	
+fov:56
+saveRootFolder:results/nn_amplification_layer_activity_testing_6_31

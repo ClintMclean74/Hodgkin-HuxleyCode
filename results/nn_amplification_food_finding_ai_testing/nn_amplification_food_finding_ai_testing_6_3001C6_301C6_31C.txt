@@ -1,0 +1,24 @@
+training:true
+testingLayerErrors:false
+nnAvgsTesting:true
+rfTemperaturePulseDurations:10
+rfTemperaturePulseIntervals:10
+rfInducedTemperaturesFromPulsesForAgents:6.3001, 6.301, 6.31
+averagingPulseSequencesResults:false
+randomSeed:198896829
+LAYERS:11
+layer1Length:3
+hiddenLayerLength:30
+resultLayerLength:30
+saveMembraneVoltagesTraceGraphTime:0
+saveAgentAllMembraneVoltagesTrace:true
+foodRightStimulus:001
+foodForwardStimulus:010
+foodLeftStimulus:100
+resetHHDuration:10
+synapticStimulusIntervalFromStimStart:70
+stimulusValue:10
+stimDuration:1
+viewPos:-14145,-6745,-15000	
+fov:56
+saveRootFolder:results/nn_amplification_food_finding_ai_testing_6_3001C6_301C6_31C
