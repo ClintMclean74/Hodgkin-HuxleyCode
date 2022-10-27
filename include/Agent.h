@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef AGENT_H
@@ -103,6 +103,8 @@ class Agent
         size_t loadingVoltageDataBufferOffset = 0;
 
         ProcessingStatus processingStatus;
+
+        bool noiseActivated = true;
 
         Agent();
         Agent(Vector pos);

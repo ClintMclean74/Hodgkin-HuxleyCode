@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -69,7 +69,7 @@ FoodForAgents::FoodForAgents(uint32_t maxSize)
     FoodForAgents();
 }
 
-void FoodForAgents::GenerateAndSaveFoodPos()
+void FoodForAgents::GenerateAndSaveFoodPosForAgents()
 {
     Vector foodPos;
     double gridStartX;
@@ -116,7 +116,6 @@ void FoodForAgents::GenerateAndSaveFoodPos()
 
             savingFoodDataFileBinary.flush();
         }
-
 
         for (uint32_t j=0; j<Agents::count; j++)
         {

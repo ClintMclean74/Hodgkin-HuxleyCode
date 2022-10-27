@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <iostream>
@@ -63,8 +63,6 @@ void GenerateNextGeneration()
         Simulation::neuralNetworks->neuralNetworks[fittestNNIndexes[0]]->Save(textBuffer);
 
         GraphicsAndUI::nnVisible = false;
-        ////Sleep(1000);
-
         Simulation::training = false;
 
         if (Simulation::testingLayerErrors)
@@ -80,26 +78,25 @@ void GenerateNextGeneration()
     {
         Simulation::neuralNetworks->CopyWeights(fittestNNIndexes); //generate from fittest two
         Simulation::neuralNetworks->Mutate();
-
     }
 
     //reset the Simulation::agents' pos, fitness and other variables for the new generation
     Simulation::agents->Reset();
-    Environment::foodForAgents_ptr->GenerateAndSaveFoodPos();//regenerate the food
+    Environment::foodForAgents_ptr->GenerateAndSaveFoodPosForAgents();//regenerate the food
 }
 
 void SimThreadFunction(void *param)
 {
+    Simulation::randomGenerator.seed(Simulation::randomSeed); //seed the random number generator for the thread
+    srand(Simulation::randomSeed);
+
     uint32_t setCount = 0;
 
-    GraphicsAndUI::SetNNsSameXYPosAndSetRedVoltages(); //set the nns to overlay each other and the temperature affected nns' membrane voltage graphs to red
+    GraphicsAndUI::SetNNsSameXYPosAndSetRedVoltages(); //set the NNs to overlay each other and the temperature affected NNs' membrane voltage graphs to red
 
     Simulation::SetCurrentRFStimulusDurationAndInterval();
 
     uint32_t rfTemperaturePulseCount = 0;
-
-    ////if (rfTemperaturePulseCount >= Simulation::maxRFTemperaturePulseBeforeReset-1)
-                        ////Simulation::currentRFStimulusInterval *= 10;
 
     if (Simulation::training == false)
     {
@@ -119,55 +116,23 @@ void SimThreadFunction(void *param)
             Simulation::saveMembraneVoltagesTraceGraphTime = 0;
         }
 
-        /*////
-        if (Simulation::stimulus)
-        {
-            Simulation::neuralNetworks->SetSynStimulus(Simulation::stimulusValue, 0, 0);
-        }
-        else
-        {
-            Simulation::neuralNetworks->SetSynStimulus(0.0);
-        }
-
-        if (incStimulus)
-        {
-            Simulation::stimulusValue += Simulation::stimulusValueInc;
-
-            incStimulus = false;
-        }
-        else
-            if (decStimulus)
-            {
-                Simulation::stimulusValue -= Simulation::stimulusValueInc;
-
-                decStimulus = false;
-            }
-            */
-
         if (!GraphicsAndUI::paused)
         {
             uint32_t neuronsCount = Simulation::neuralNetworks->neuralNetworks[0]->neurons->count;
 
             for (uint32_t i = 0; i < neuronsCount; i++)
             {
-                HH_NeuralNetworks::NEURAL_NOISE[i] = (double) rand()/RAND_MAX * HH_NeuralNetworks::MAX_NEURAL_NOISE - HH_NeuralNetworks::MAX_NEURAL_NOISE/2;
+                HH_NeuralNetworks::NEURAL_NOISE[i] = (double) rand()/RAND_MAX * Simulation::MAX_NEURAL_NOISE - Simulation::MAX_NEURAL_NOISE/2;
             }
 
             Simulation::generationTime = Simulation::agents->agents[0]->generationTime;
 
             if (!Simulation::training) //if testing
             {
-                //if new rf stimulus
+                //if new RF stimulus
                 if (Simulation::generationTime > Simulation::startRFStimulusTime + Simulation::currentRFStimulusDuration + Simulation::currentRFStimulusInterval)
                 {
-                    //get a new target temperature duration and intervals for the Simulation::agents
-                    //this is chosen randomly so that the times vary
-                    ////Simulation::SetCurrentRFStimulusDurationAndInterval();
-
                     rfTemperaturePulseCount++;
-
-                    ////if (rfTemperaturePulseCount = Simulation::maxRFTemperaturePulseBeforeReset)
-                        ////Simulation::currentRFStimulusInterval *= 10;
 
                     if (Simulation::averagingPulseSequencesResults && rfTemperaturePulseCount >= Simulation::maxRFTemperaturePulseBeforeReset)
                     {
@@ -176,19 +141,8 @@ void SimThreadFunction(void *param)
                         if (Simulation::rfTemperaturePulseSequenceCount <= Simulation::maxRFTemperaturePulseSequenceTrials || (Simulation::rfTemperaturePulseSequenceCount % 10) == 0) //save graph data if less than the required testing trials or every 10 after
                         {
                             Simulation::resultsAndGraphs->SaveGraphs();
-
-                            /*////
-                            Simulation::resultsAndGraphs->rfTemperatureLessNormalTemperatureCurrentSpikeCountGraph->Save("", 0.1);
-                            Simulation::resultsAndGraphs->normalTemperatureCurrentSpikeCountGraph->Save("", 0.1);
-                            Simulation::resultsAndGraphs->rfTargetTemperatureGraph->Save("", 0.1);
-                            Simulation::resultsAndGraphs->accruedErrorPercentageGraph->Save("", 0.1);
-                            */
                         }
 
-                        /*////Simulation::resultsAndGraphs->rfTemperatureLessNormalTemperatureCurrentSpikeCountGraph->ResetIndexes();
-                        Simulation::resultsAndGraphs->normalTemperatureCurrentSpikeCountGraph->ResetIndexes();
-                        Simulation::resultsAndGraphs->accruedErrorPercentageGraph->ResetIndexes();
-                        */
                         Simulation::resultsAndGraphs->rfTargetTemperatureGraph->ResetIndexes();
                         Simulation::resultsAndGraphs->rfCurrentTemperatureGraph->ResetIndexes();
                         Simulation::neuralNetworks->ResetHH();
@@ -198,13 +152,9 @@ void SimThreadFunction(void *param)
                         rfTemperaturePulseCount = 0;
                     }
 
+                    //get a new target temperature duration and intervals for the Simulation::agents
+                    //this is chosen randomly so that the times vary
                     Simulation::SetCurrentRFStimulusDurationAndInterval();
-
-                    ////Simulation::currentRFStimulusDuration += (rfTemperaturePulseCount*1.5);
-                    ////Simulation::currentRFStimulusInterval += (rfTemperaturePulseCount*1.5);
-                    ////if (rfTemperaturePulseCount >= Simulation::maxRFTemperaturePulseBeforeReset - 1)
-                        ///Simulation::currentRFStimulusInterval *= 10;
-
 
                     Simulation::startRFStimulusTime = Simulation::generationTime;
                 }
@@ -238,6 +188,8 @@ void SimThreadFunction(void *param)
                     GenerateNextGeneration(); //check fitness, if errors, mutate and create new generation, otherwise create new generation from fittest agent, end training and start testing
 
                     Simulation::agents->ResetTraces();
+
+                    Simulation::resultsAndGraphs->ResetTotalVoltageDifferencesForLayerAndTotalErrorPercentageForLayerResultingFromRFTemperatureIncreases();
                 }
                 else
                 {
@@ -245,7 +197,9 @@ void SimThreadFunction(void *param)
                     {
                         Simulation::trainingGeneration++;
 
-                        Simulation::training = true; //for experiments regenerating nn to get averages for layer testing
+                        if (Simulation::resetTraining)
+                            Simulation::training = true; //for experiments regenerating NN to get averages for layer testing
+
                         Simulation::generationDuration = Simulation::generationDurationEvolvingTraining;
 
                         Simulation::agents->RegenerateNNConnections();
@@ -253,20 +207,15 @@ void SimThreadFunction(void *param)
                         Simulation::resultsAndGraphs->ResetTotalVoltageDifferencesForLayerAndTotalErrorPercentageForLayerResultingFromRFTemperatureIncreases();
                     }
 
-                    Environment::foodForAgents_ptr->GenerateAndSaveFoodPos();
+                    Environment::foodForAgents_ptr->GenerateAndSaveFoodPosForAgents();
                     Environment::foodForAgents_ptr->SetFoodColor(Food::FoodDefaultColor);
 
                     Simulation::agents->ResetTraces();
-
-                    /*////if (Simulation::nnAvgsTesting)
-                    {
-                        drawingGraphics = true;
-                    }*/
                 }
 
                 Simulation::agents->Reset();
 
-                //starting a new generation so also reset the start of the rf stimulus time
+                //starting a new generation so also reset the start of the RF stimulus time
                 Simulation::startRFStimulusTime = 0;
 
                 Simulation::generations++;
@@ -277,10 +226,11 @@ void SimThreadFunction(void *param)
             {                          //so if > 0 then save the data for the result graphs
                 if (!Simulation::training) //if testing
                 {
-                    Simulation::resultsAndGraphs->DetermineAndGraphElectromagneticSpikeCountErrors();
+                    Simulation::resultsAndGraphs->DetermineLayerPercentageDifferences();
+                    Simulation::resultsAndGraphs->GraphAvgLayerPercentageDifferences();
 
-                    if (Simulation::trainingGeneration < Simulation::maxTestingGenerations || (Simulation::trainingGeneration % 10) == 0) //save graph data if less than the required testing generations or every 10 after
-                    {
+                    if (Simulation::trainingGeneration < Simulation::maxTestingGenerations || ((Simulation::trainingGeneration + 1) % 10) == 0) //save graph data if less than the required testing generations or every 10 after
+                    {                                                                                                                           //Simulation::trainingGeneration + 1 because starts at 0 and saves the graphs after every processed result during training generation
                         if (Simulation::resultsAndGraphs->voltageDifferencesSamples > 0)
                         {
                             Simulation::resultsAndGraphs->SaveGraphs();
@@ -289,45 +239,20 @@ void SimThreadFunction(void *param)
                 }
             }
 
-            if (!Simulation::training) //if testing
-                if (Simulation::trainingGeneration < Simulation::maxTestingGenerations) //and if less than the required testing generations
-                    Simulation::resultsAndGraphs->DetermineElectromagneticInducedTotalVoltageDifferences(); //determine the effects of the RF induced temperature increases on the membrane voltages
+            if (!Simulation::training) //if testing graph results
+            {
+                Simulation::resultsAndGraphs->DetermineElectromagneticInducedTotalVoltageDifferences(); //determine the effects of the RF induced temperature increases on the membrane voltages
 
+                Simulation::resultsAndGraphs->GraphAvgRFMembraneVoltageDifferences();
+            }
 
+            //graph the current spike count
+            Simulation::resultsAndGraphs->GraphCurrentExcitoryRFSpikeCount();
+
+            //graph the current RF temperature
+            Simulation::resultsAndGraphs->GraphCurrentRFTemperature();
 
             Simulation::deltas =  Simulation::generationTime / Simulation::deltaTime;
-
-            /*double round, remainder;
-
-            round = MathUtilities::Round(Simulation::generationTime, 2);
-
-            round = MathUtilities::Round(0.18000000000000002, 2);
-
-
-            if (Simulation::generationTime == 1)
-                int grc = 1;
-
-            remainder = fmod(round, Simulation::graphDataPointIntervalDeltas);
-
-            ////remainder = fmod(MathUtilities::Round(Simulation::generationTime, 2), Simulation::graphDataPointInterval);
-
-            ////double fmodResult = fmod(round, Simulation::graphDataPointIntervalDeltas);
-            ////if (fmodResult>-0.0000000000001 && fmodResult<0.0000000000001) //essentially zero
-            */
-            if (Simulation::deltas % Simulation::graphDataPointIntervalDeltas == 0)
-            {
-                //graph the voltage differences
-                    Simulation::resultsAndGraphs->GraphRFMembraneVoltageDifferences();
-
-                    Simulation::resultsAndGraphs->DetermineAndGraphElectromagneticSpikeCountErrors();
-
-                //graph the current spike count
-                Simulation::resultsAndGraphs->GraphCurrentExcitoryRFSpikeCount();
-
-                //graph the current rf temperature
-                Simulation::resultsAndGraphs->GraphCurrentRFTemperature();
-
-            }
 
             //increment the simulation time
             Simulation::totalSimTime += Simulation::deltaTime;

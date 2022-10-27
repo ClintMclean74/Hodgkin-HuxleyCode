@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <string.h>
@@ -55,7 +55,7 @@ HH_Neurons::HH_Neurons(uint32_t layers, uint32_t* rowCountsForColumns, void* neu
 
         resultsBuffers[i] = new ResultsBuffer(rowCountsForColumns[i], Simulation::stimulusArrayLength);
 
-        count+=rowCountsForColumns[i];
+        count += rowCountsForColumns[i];
     }
 
     for (uint32_t i=layers; i<HH_NeuralNetwork::MAX_LAYERS; i++)
@@ -87,8 +87,6 @@ HH_Neurons::HH_Neurons(uint32_t layers, uint32_t* rowCountsForColumns, void* neu
                     weightValue = Simulation::weightValue;
 
                 neurons[i][j].connections.Add(i-1, k, weightValue);
-                ////original neurons[i][j].connections.Add(i-1, k, 0.005);//for setting a specific weight for determining inhibitory/excitory effects of temperature where normal neuron fires and warmer doesn't
-                ////neurons[i][j].connections.Add(i-1, k, 0.007);//for setting a specific weight for determining inhibitory/excitory effects of temperature where normal neuron fires and warmer doesn't
             }
         }
     }
@@ -108,6 +106,9 @@ HH_Neurons::HH_Neurons(uint32_t layers, uint32_t* rowCountsForColumns, void* neu
     graphColor = new Color(0, 1, 0);
 
     mostRecentStimulus[0] = 0;
+
+    totalCurrentSpikeCount = 0;
+    spikeCountSamples = 0;
 }
 
 void HH_Neurons::Load(FILE* file)
@@ -294,12 +295,17 @@ void HH_Neurons::ClearQ()
 
 void HH_Neurons::Process()
 {
+    HH_NeuralNetwork* networkPtr = (HH_NeuralNetwork*) neuralNetwork;
+
     uint32_t k =0;
     for (uint32_t i=0; i<layers; i++)
     {
         for (uint32_t j=0; j<rowCountsForColumns[i]; j++)
         {
-            neurons[i][j].Process(HH_NeuralNetworks::NEURAL_NOISE[k++]);
+            if (!Simulation::training && networkPtr->agent->noiseActivated)
+                neurons[i][j].Process(HH_NeuralNetworks::NEURAL_NOISE[k++]);
+            else
+                neurons[i][j].Process(0);
         }
     }
 }
@@ -312,27 +318,27 @@ void HH_Neurons::LoadVoltagesForlayer(FILE* file)
     char textBuffer[999999];
     memset(textBuffer, 0, 999999);
 
-        char *ptr;
+    char *ptr;
 
-        fgets(textBuffer, 999999, file);
+    fgets(textBuffer, 999999, file);
 
-            ptr = strtok(textBuffer, ",");
-            layerIndex = atoi(ptr);
+    ptr = strtok(textBuffer, ",");
+    layerIndex = atoi(ptr);
 
-            ptr = strtok(NULL, ",");
-            neuronsCountForLayer = atoi(ptr);
+    ptr = strtok(NULL, ",");
+    neuronsCountForLayer = atoi(ptr);
 
-        uint32_t j = 0;
-        while (ptr != NULL)
-        {
-            ptr = strtok (NULL, ",");
+    uint32_t j = 0;
+    while (ptr != NULL)
+    {
+        ptr = strtok (NULL, ",");
 
-            voltage = atof(ptr);
+        voltage = atof(ptr);
 
-            neurons[layerIndex][j].membraneVoltage = voltage;
+        neurons[layerIndex][j].membraneVoltage = voltage;
 
-            j++;
-        }
+        j++;
+    }
 }
 
 void HH_Neurons::LoadVoltageData(FILE* file)
@@ -575,29 +581,32 @@ void HH_Neurons::ResetHH()
 
 uint32_t HH_Neurons::GetCurrentSpikeCount()
 {
-    uint32_t spikeCount = 0;
+    uint32_t newCurrentSpikeCount = 0;
 
     for (uint32_t j=0; j<layers;j++)
     {
         for (uint32_t i=0; i<rowCountsForColumns[j];i++)
         {
-            spikeCount += neurons[j][i].spike;
+            newCurrentSpikeCount += neurons[j][i].spike;
         }
     }
 
-    return spikeCount;
+    return newCurrentSpikeCount;
+}
+
+void HH_Neurons::ResetCurrentSpikeCountAvg()
+{
+    totalCurrentSpikeCount = 0;
+    spikeCountSamples = 0;
 }
 
 uint32_t HH_Neurons::GetCurrentSpikeCountForLayer(uint32_t index)
 {
     uint32_t spikeCount = 0;
 
-    ////for (uint32_t j=0; j<layers;j++)
+    for (uint32_t i=0; i<rowCountsForColumns[index];i++)
     {
-        for (uint32_t i=0; i<rowCountsForColumns[index];i++)
-        {
-            spikeCount += neurons[index][i].spike;
-        }
+        spikeCount += neurons[index][i].spike;
     }
 
     return spikeCount;

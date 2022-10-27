@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef HH_NeuralNetworks_H
@@ -31,9 +31,8 @@ class HH_NeuralNetworks
 
     public:
         static const uint32_t MAX_NETWORKS = 1000;
-        static uint32_t NETWORKS_ROWS;
-        static uint32_t NETWORKS_COLUMNS;
-        static double MAX_NEURAL_NOISE;
+        static const uint32_t NETWORKS_ROWS = 1;
+        static const uint32_t NETWORKS_COLUMNS = 4;
         static double NEURAL_NOISE_DELTA;
         static double* NEURAL_NOISE;
 

@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <string.h>
@@ -29,7 +29,6 @@ HH_NeuralNetworks::HH_NeuralNetworks(Agents *agents)
 {
     visible = true;
     HH_NeuralNetwork::ROWS = new uint32_t[HH_NeuralNetwork::LAYERS];
-
 
     HH_NeuralNetwork::ROWS[0] = HH_NeuralNetwork::layer1Length;
     uint8_t i = 1;
@@ -76,11 +75,22 @@ void HH_NeuralNetworks::InitializeNNs(char* fileName)
 
             neuralNetworks[neuralNetworksCount++]->pos = pos;
 
+            if (neuralNetworksCount >= Simulation::rfInducedTemperaturesFromPulsesForAgentsCount + 1)
+            {
+                i = HH_NeuralNetworks::NETWORKS_COLUMNS;
+                break;
+            }
+
             pos.y += (HH_NeuralNetwork::HEIGHT + HH_NeuralNetwork::Y_GAP);
-            pos.x += (HH_NeuralNetwork::WIDTH + HH_NeuralNetwork::X_GAP);
         }
 
         pos.x += (HH_NeuralNetwork::WIDTH + HH_NeuralNetwork::X_GAP);
+    }
+
+    for (uint32_t i = 0; i < Simulation::agentsWithoutNoiseCount; i++)
+    {
+        if (Simulation::agentsWithoutNoise[i] < Simulation::agents->count)
+            Simulation::agents->agents[Simulation::agentsWithoutNoise[i]]->noiseActivated = false;
     }
 }
 
@@ -95,7 +105,6 @@ void HH_NeuralNetworks::Add(HH_NeuralNetwork *neuralNetwork)
     pos.y = -MembraneVoltageGraph::HEIGHT * (HH_NeuralNetworks::NETWORKS_ROWS/2);
 
     neuralNetworks[neuralNetworksCount]->pos = pos;
-
 
     neuralNetworksCount++;
 }
@@ -227,7 +236,7 @@ void HH_NeuralNetworks::Process()
 
     for (uint32_t i = 0; i < neuronsCount; i++)
     {
-        HH_NeuralNetworks::NEURAL_NOISE[i] = (double) rand()/RAND_MAX * HH_NeuralNetworks::MAX_NEURAL_NOISE - HH_NeuralNetworks::MAX_NEURAL_NOISE/2;
+        HH_NeuralNetworks::NEURAL_NOISE[i] = (double) rand()/RAND_MAX * Simulation::MAX_NEURAL_NOISE - Simulation::MAX_NEURAL_NOISE/2;
     }
 
     for (uint32_t i = 0; i < neuralNetworksCount; i++)
@@ -275,14 +284,6 @@ HH_NeuralNetworks::~HH_NeuralNetworks()
     delete neuralNetworks;
 }
 
-////double HH_NeuralNetworks::MAX_NEURAL_NOISE = 33.00; ////works not causing signaling
-////double HH_NeuralNetworks::MAX_NEURAL_NOISE = 37.00; ////works for infrequent signaling
-double HH_NeuralNetworks::MAX_NEURAL_NOISE = 0.0;
 double* HH_NeuralNetworks::NEURAL_NOISE = NULL;
 
-////double HH_NeuralNetworks::NEURAL_NOISE_DELTA = 0.000001;
 double HH_NeuralNetworks::NEURAL_NOISE_DELTA = 1;
-
-
-uint32_t HH_NeuralNetworks::NETWORKS_ROWS = 1;
-uint32_t HH_NeuralNetworks::NETWORKS_COLUMNS = 1;

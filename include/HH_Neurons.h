@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef HH_Neurons_H
@@ -33,6 +33,9 @@ class HH_Neurons
     void* neuralNetwork;
     char graphicsText[255];
     char resultStr[255];
+
+    double totalCurrentSpikeCount;
+    uint32_t spikeCountSamples;
 
     FILE* voltagesFile;
 
@@ -69,6 +72,7 @@ class HH_Neurons
         void SetQ(char* q);
         void ClearQ();
         uint32_t GetCurrentSpikeCount();
+        void ResetCurrentSpikeCountAvg();
         uint32_t GetCurrentSpikeCountForLayer(uint32_t index);
         int32_t GetCurrentLeadingSpikeCount(void *nn);
         uint32_t GetTotalSpikeCount();

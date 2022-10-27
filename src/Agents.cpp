@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <windows.h>
@@ -73,6 +73,12 @@ void Agents::RegenerateNNConnections()
     for(uint32_t i=0; i<count;i++)
     {
         agents[i]->RegenerateNNConnections();
+
+        if (!Simulation::training && i>0) //if not training then copy the previous NN instead of randomizing weights
+        {
+            ((HH_NeuralNetwork *) agents[i]->neuralNetwork)->Copy((HH_NeuralNetwork *) agents[0]->neuralNetwork);
+            ((HH_NeuralNetwork *) agents[i]->neuralNetwork)->neurons->CopyResultsBuffers(((HH_NeuralNetwork *) agents[0]->neuralNetwork)->neurons->resultsBuffers);
+        }
     }
 }
 

@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <string.h>
@@ -170,14 +170,12 @@ void HH_NeuralNetwork::RegenerateConnections()
 
 void HH_NeuralNetwork::SetQ(char* q)
 {
-
     neurons->SetQ(q);
 }
 
 void HH_NeuralNetwork::ClearQ()
 {
     neurons->ClearQ();
-
 }
 
 void HH_NeuralNetwork::Process()

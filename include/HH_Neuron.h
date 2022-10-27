@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef HH_Neuron_H
@@ -65,8 +65,6 @@ class HH_Neuron
         uint32_t printCount;
 
         void* neuralNetwork;
-
-        ////uint32_t signalling;
 
         NN_Connections connections;
         double bias = 0;
@@ -120,12 +118,7 @@ class HH_Neuron
 
         long double membraneVoltage;
         long double referenceVoltage;
-        /*////
-        double thresholdVoltage;
-        double HH_GatingVariablesReferenceVoltage;
-        */
 
-        //const static uint32_t MembraneVoltageGraph::MAX_GRAPH_INDEX = 1000;
         uint32_t membraneVoltageIndex;
         long double membraneVoltageValues[MembraneVoltageGraph::MAX_GRAPH_INDEX];
 

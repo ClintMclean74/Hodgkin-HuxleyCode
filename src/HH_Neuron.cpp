@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <math.h>
@@ -43,7 +43,6 @@ HH_Neuron::HH_Neuron()
     K_Concentration_in = 400;
 
     Cl_Concentration_out = 560;
-    ////original Cl_Concentration_in = 52;
     Cl_Concentration_in = 40;
 
     SetTargetTemperature(Simulation::referenceTemperature);
@@ -57,22 +56,9 @@ HH_Neuron::HH_Neuron()
     GL_Max = 0.3;
     GCl_Max = 120*15;
 
-    GNa_Max_Synapse = GNa_Max*0.075;
-    GCl_Max_Synapse = GCl_Max*0.14;
-    GK_Max_Synapse = GK_Max;
-
-    GNa_Max_Synapse/=1.1;
-    GCl_Max_Synapse/=1.1;
-
+    //These values for the synapse conductance produce biologically plausible balances of activations and deactivations
     GNa_Max_Synapse = 8;
     GCl_Max_Synapse = 230;
-
-
-    //Maximum Conductances for area
-    /*////original maxSodiumConductanceForArea = GNa_Max * membrane_surface * 1e-8;// Na conductance [mS]
-    maxPotasiumConductanceForArea = GK_Max * membrane_surface * 1e-8;  // K conductance [mS]
-    maxLeakConductanceForArea = GL_Max * membrane_surface * 1e-8;  // leak conductance [mS]
-    */
 
     maxSodiumConductanceForArea = GNa_Max;// Na conductance [mS]
     maxPotasiumConductanceForArea = GK_Max;  // K conductance [mS]
@@ -89,17 +75,9 @@ HH_Neuron::HH_Neuron()
     spike = false;
     spikeCount = 0;
 
-
     ENa = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::Na_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (Na_Concentration_out/Na_Concentration_in));
     EK = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::K_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (K_Concentration_out/K_Concentration_in));
     EL = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::Cl_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (Cl_Concentration_out/Cl_Concentration_in));
-
-    /*////
-    ENa = MathUtilities::Round(ENa, Simulation::roundingDecimalPoints);
-    EK = MathUtilities::Round(EK, Simulation::roundingDecimalPoints);
-    EL = MathUtilities::Round(EL, Simulation::roundingDecimalPoints);
-    */
-
 
     GNa_Rest = 0.05;
     GK_Rest = 1;
@@ -205,7 +183,6 @@ void HH_Neuron::SetPos(double x, double y, double z)
     this->pos.z = z;
 }
 
-//ref Spike_neural_models_part_I_The_Hodgkin-Huxley_mode for equations
 long double HH_Neuron::IncM()
 {
     long double voltageDifference = Simulation::HH_GatingVariablesReferenceVoltage - membraneVoltage;
@@ -353,96 +330,85 @@ long double HH_Neuron::AdjustTemperature()
     return Tk;
 }
 
-    void HH_Neuron::SetSynStimulus(double stimulus)
-    {
-        this->synStimulus = stimulus;
-    }
+void HH_Neuron::SetSynStimulus(double stimulus)
+{
+    this->synStimulus = stimulus;
+}
 
-    void HH_Neuron::SetReceivingStimulus(bool value)
-    {
-        receivingStimulus = value;
-    }
+void HH_Neuron::SetReceivingStimulus(bool value)
+{
+    receivingStimulus = value;
+}
 
-    void HH_Neuron::Process(double noise)
+void HH_Neuron::Process(double noise)
+{
+    if (!Simulation::loadingData)
     {
+        //Calculate equilibrium voltages for temperature
+        ENa = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::Na_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (Na_Concentration_out/Na_Concentration_in));
+        EK = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::K_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (K_Concentration_out/K_Concentration_in));
+        EL = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::Cl_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (Cl_Concentration_out/Cl_Concentration_in));
+
+        long double totalExcitorySynapseConductance = 0;
+        long double totalInhibitorySynapseConductance = 0;
+        long double excitorySynapseCurrent;
+        long double inhibitorySynapseCurrent;
+
+        synStimulus = 0;
+
+        if (membraneVoltage >= 0)
+            receivingPreSynapticStimulus = false;
+        else
+            if (membraneVoltage < 0)
+                receivingPreSynapticStimulus = true;
+
+        if (connections.count > 0 && receivingPreSynapticStimulus) //get received stimulus (excitory and inhibitory)
+        {
+            totalExcitorySynapseConductance = connections.GetExcitorySynapseConductance(((HH_NeuralNetwork*)neuralNetwork)->neurons->neurons);
+            excitorySynapseCurrent = -totalExcitorySynapseConductance * GNa_Max_Synapse * (membraneVoltage - ENa);
+
+            totalInhibitorySynapseConductance = connections.GetInhibitorySynapseConductance(((HH_NeuralNetwork*)neuralNetwork)->neurons->neurons);
+            inhibitorySynapseCurrent = totalInhibitorySynapseConductance * GCl_Max_Synapse * (membraneVoltage - EL);//EK closer to resting membrane voltage so driving voltage far less than ENa, synapticSignalingConductance then would have to be greater negative
+
+            ////Note inverted (-totalExcitorySynapseConductance ) because (membraneVoltage - ENa) should be negative = positive charge flowing into cell. This increases mV so stimulus should be +
+            //// if (membraneVoltage - EL) = + = negative charge flowing out of cell. This decreases mV so stimulus should be - and totalInhibitorySynapseConductance < 0 so works
+            //// also, although negative VGC current = a + charge flowing into the cell
+            //// and a positive VGC current = + charge flowing out of cell
+            //// a positive stimulus though = flowing into cell
+
+
+            synStimulus = excitorySynapseCurrent + inhibitorySynapseCurrent;
+
+            if (synStimulus > maxSynStimulus)
+                maxSynStimulus = synStimulus;
+
+            if (synStimulus < minSynStimulus)
+            minSynStimulus = synStimulus;
+        }
+
+        synStimulus += noise;
+
+        synStimulus += setStimulus;
+
         if (!Simulation::loadingData)
         {
-            //Calculate equilibrium voltages for temperature
-            ENa = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::Na_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (Na_Concentration_out/Na_Concentration_in));
-            EK = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::K_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (K_Concentration_out/K_Concentration_in));
-            EL = (ChemistryValues::gasConstant_R * Tk) / (ChemistryValues::Cl_Valence * ChemistryValues::faradayConstant) * ChemistryValues::lnToLogConversionFactor * log10((long double) (Cl_Concentration_out/Cl_Concentration_in));
+            membraneVoltage = AdjustMembraneVoltage();
+        }
 
-            /*////
-            ENa = MathUtilities::Round(ENa, Simulation::roundingDecimalPoints);
-            EK = MathUtilities::Round(EK, Simulation::roundingDecimalPoints);
-            EL = MathUtilities::Round(EL, Simulation::roundingDecimalPoints);
-            */
+        double x, result;
 
-            long double totalExcitorySynapseConductance = 0;
-            long double totalInhibitorySynapseConductance = 0;
-            long double excitorySynapseCurrent;
-            long double inhibitorySynapseCurrent;
+        /*////if (membraneVoltage < -HH_Neuron::MINMAX_VOLTAGE)
+        {
+            x = membraneVoltage + HH_Neuron::MINMAX_VOLTAGE;
+            x *= -1;
 
-            synStimulus = 0;
+            result = 1 / (1 + exp(-x*0.0233));
+            result = (result - 0.5) * 2;
+            result = -HH_Neuron::MINMAX_VOLTAGE - result * 75;
 
-            if (membraneVoltage >= 0)
-                receivingPreSynapticStimulus = false;
-            else
-                if (membraneVoltage < 0)
-                    receivingPreSynapticStimulus = true;
-
-            if (connections.count > 0 && receivingPreSynapticStimulus) //get received stimulus (excitory and inhibitory)
-            {
-                totalExcitorySynapseConductance = connections.GetExcitorySynapseConductance(((HH_NeuralNetwork*)neuralNetwork)->neurons->neurons);
-                excitorySynapseCurrent = -totalExcitorySynapseConductance * GNa_Max_Synapse * (membraneVoltage - ENa);
-
-                totalInhibitorySynapseConductance = connections.GetInhibitorySynapseConductance(((HH_NeuralNetwork*)neuralNetwork)->neurons->neurons);
-                inhibitorySynapseCurrent = totalInhibitorySynapseConductance * GCl_Max_Synapse * (membraneVoltage - EL);//EK closer to resting membrane voltage so driving voltage far less than ENa, synapticSignalingConductance then would have to be greater negative
-
-                ////Note inverted (-totalExcitorySynapseConductance ) because (membraneVoltage - ENa) should be negative = positive charge flowing into cell. This increases mV so stimulus should be +
-                                            //// if (membraneVoltage - EL) = + = negative charge flowing out of cell. This decreases mV so stimulus should be - and totalInhibitorySynapseConductance < 0 so works
-                                            //// also, although negative VGC current = a + charge flowing into the cell
-                                            //// and a positive VGC current = + charge flowing out of cell
-                                            //// a positive stimulus though = flowing into cell
-
-
-                synStimulus = excitorySynapseCurrent + inhibitorySynapseCurrent;
-
-                if (synStimulus > maxSynStimulus)
-                    maxSynStimulus = synStimulus;
-
-                if (synStimulus < minSynStimulus)
-                    minSynStimulus = synStimulus;
-            }
-
-            synStimulus += noise;
-
-            synStimulus += setStimulus;
-
-            ////if (synStimulus != 0)
-                ////synStimulus = MathUtilities::Round(synStimulus, Simulation::roundingDecimalPoints);
-
-            if (!Simulation::loadingData)
-            {
-                membraneVoltage = AdjustMembraneVoltage();
-            }
-
-            ////membraneVoltage = MathUtilities::Round(membraneVoltage, Simulation::roundingDecimalPoints);
-
-            double x, result;
-
-            /*////if (membraneVoltage < -HH_Neuron::MINMAX_VOLTAGE)
-            {
-                x = membraneVoltage + HH_Neuron::MINMAX_VOLTAGE;
-                x *= -1;
-
-                result = 1 / (1 + exp(-x*0.0233));
-                result = (result - 0.5) * 2;
-                result = -HH_Neuron::MINMAX_VOLTAGE - result * 75;
-
-                membraneVoltage = result;
-            }
-            else
+            membraneVoltage = result;
+        }
+        else
             if (membraneVoltage > HH_Neuron::MINMAX_VOLTAGE)
             {
                 x = membraneVoltage - HH_Neuron::MINMAX_VOLTAGE;
@@ -453,243 +419,164 @@ long double HH_Neuron::AdjustTemperature()
 
                 membraneVoltage = result;
             }*/
+    }
+
+    if (!Simulation::loadingData)
+    {
+        m = IncM();
+        h = IncH();
+        n = IncN();
+
+        Tk = AdjustTemperature();
+    }
+
+    if (spikeCount % 10 == 0)
+    {
+        minVoltage = 999999;
+        maxVoltage = -999999;
+    }
+
+    printCount++;
+
+    if (membraneVoltage > maxVoltage)
+        maxVoltage = membraneVoltage;
+
+    if (membraneVoltage < minVoltage)
+        minVoltage = membraneVoltage;
+
+    if (!spike && membraneVoltage > Simulation::preSynapticaActivityVoltageThreshold)
+    {
+        spikeCount++;
+
+        spike = true;
+    }
+    else
+        if (membraneVoltage <= Simulation::preSynapticaActivityVoltageThreshold - 10 && spike)
+        {
+            spike = false;
         }
+
+    if (MembraneVoltageGraph::SCROLLING)
+    {
+        memcpy(membraneVoltageValues, &membraneVoltageValues[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
+        membraneVoltageValues[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = membraneVoltage;
 
         if (!Simulation::loadingData)
         {
-            m = IncM();
-            h = IncH();
-            n = IncN();
+            memcpy(mValues, &mValues[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
+            mValues[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = m;
 
-            Tk = AdjustTemperature();
+            memcpy(nValues, &nValues[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
+            nValues[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = n;
 
-            /*////
-            m = MathUtilities::Round(m, Simulation::roundingDecimalPoints);
-            h = MathUtilities::Round(h, Simulation::roundingDecimalPoints);
-            n = MathUtilities::Round(n, Simulation::roundingDecimalPoints);
-            */
-        }
+            memcpy(hValues, &hValues[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
+            hValues[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = h;
 
-        if (spikeCount % 10 == 0)
-        {
-            minVoltage = 999999;
-            maxVoltage = -999999;
-        }
+            memcpy(graph_NaCurrent, &graph_NaCurrent[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
+            graph_NaCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = naCurrent;
 
-        printCount++;
+            memcpy(graph_KCurrent, &graph_KCurrent[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
+            graph_KCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = kCurrent;
 
-        if (membraneVoltage > maxVoltage)
-            maxVoltage = membraneVoltage;
-
-        if (membraneVoltage < minVoltage)
-            minVoltage = membraneVoltage;
-
-        if (!spike && membraneVoltage > Simulation::preSynapticaActivityVoltageThreshold)
-        {
-            spikeCount++;
-
-            spike = true;
-        }
-        else
-            if (membraneVoltage <= Simulation::preSynapticaActivityVoltageThreshold - 10 && spike)
-            {
-                spike = false;
-            }
-
-        if (MembraneVoltageGraph::SCROLLING)
-        {
-            memcpy(membraneVoltageValues, &membraneVoltageValues[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
-            membraneVoltageValues[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = membraneVoltage;
-
-            if (!Simulation::loadingData)
-            {
-                memcpy(mValues, &mValues[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
-                mValues[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = m;
-
-                memcpy(nValues, &nValues[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
-                nValues[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = n;
-
-                memcpy(hValues, &hValues[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
-                hValues[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = h;
-
-                memcpy(graph_NaCurrent, &graph_NaCurrent[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
-                graph_NaCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = naCurrent;
-
-                memcpy(graph_KCurrent, &graph_KCurrent[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
-                graph_KCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = kCurrent;
-
-                memcpy(graph_LCurrent, &graph_LCurrent[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
-                graph_LCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = lCurrent;
-            }
-        }
-        else
-        {
-            membraneVoltageValues[membraneVoltageIndex++] = membraneVoltage;
-
-            if (membraneVoltageIndex >= MembraneVoltageGraph::MAX_GRAPH_INDEX)
-            {
-                membraneVoltageIndex = 0;
-            }
+            memcpy(graph_LCurrent, &graph_LCurrent[1], (MembraneVoltageGraph::MAX_GRAPH_INDEX-1) * sizeof(long double));
+            graph_LCurrent[MembraneVoltageGraph::MAX_GRAPH_INDEX-1] = lCurrent;
         }
     }
-
-    double HH_Neuron::GetStrongestABSWeight()
+    else
     {
-        return connections.GetStrongestABSWeight();
+        membraneVoltageValues[membraneVoltageIndex++] = membraneVoltage;
+
+        if (membraneVoltageIndex >= MembraneVoltageGraph::MAX_GRAPH_INDEX)
+        {
+            membraneVoltageIndex = 0;
+        }
+    }
+}
+
+double HH_Neuron::GetStrongestABSWeight()
+{
+    return connections.GetStrongestABSWeight();
+}
+
+void HH_Neuron::Draw(double maxABSWeight, long double* comparisonVoltageValues)
+{
+    if (GraphicsAndUI::connectionsVisible)
+        connections.Draw(this, ((HH_NeuralNetwork*)neuralNetwork)->neurons->neurons, maxABSWeight);
+
+    glPushMatrix();
+    glTranslatef(pos.x, pos.y, pos.z);
+
+    glColor3f(1, 1, 1);
+    glLineWidth(4);
+
+    glColor3f(1, 1, 1);
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(0, 0);
+	glVertex2f(MembraneVoltageGraph::MAX_GRAPH_INDEX, 0);
+	glEnd();
+
+    glLineWidth(2);
+
+    glPushMatrix();
+    glScalef(1, 2.5, 1);
+
+    Color* graphColor = (((HH_NeuralNetwork*)neuralNetwork)->neurons->graphColor);
+
+    if (drawVoltage)
+    {
+        double membraneVoltageDouble;
+
+        glColor3f(graphColor->r, graphColor->g, graphColor->b);
+
+        glBegin(GL_LINE_STRIP);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
+        {
+            glVertex2f((double) i, membraneVoltageValues[i]);
+        }
+        glEnd();
     }
 
-    void HH_Neuron::Draw(double maxABSWeight, long double* comparisonVoltageValues)
+    if (comparisonVoltageValues)
     {
-        if (GraphicsAndUI::connectionsVisible)
-            connections.Draw(this, ((HH_NeuralNetwork*)neuralNetwork)->neurons->neurons, maxABSWeight);
-
-        glPushMatrix();
-        glTranslatef(pos.x, pos.y, pos.z);
-
-        glColor3f(1, 1, 1);
-        glLineWidth(4);
-
-        glColor3f(1, 1, 1);
-		glBegin(GL_LINE_STRIP);
-		glVertex2f(0, 0);
-		glVertex2f(MembraneVoltageGraph::MAX_GRAPH_INDEX, 0);
-		glEnd();
-
-        glLineWidth(2);
-
-        glPushMatrix();
-        glScalef(1, 2.5, 1);
-
-        Color* graphColor = (((HH_NeuralNetwork*)neuralNetwork)->neurons->graphColor);
-
-        if (drawVoltage)
+        glColor3f(1, 1, 0);
+        glBegin(GL_LINE_STRIP);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
         {
-            double membraneVoltageDouble;
+            glVertex2f((double) i, (membraneVoltageValues[i] - comparisonVoltageValues[i]) *100000);
+        }
+        glEnd();
+    }
 
-            glColor3f(graphColor->r, graphColor->g, graphColor->b);
 
+    if (drawEquilibrumVoltages)
+    {
+        if (Tc == Simulation::referenceTemperature)
+        {
+            glColor3f(1, 0, 0);
             glBegin(GL_LINE_STRIP);
-            for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-            {
-                glVertex2f((double) i, membraneVoltageValues[i]);
-            }
+            glVertex2f(0, ENa);
+            glVertex2f(MembraneVoltageGraph::MAX_GRAPH_INDEX, ENa);
             glEnd();
-        }
 
-        if (comparisonVoltageValues)
-        {
+            glColor3f(1, 0.75, 0.25);
+            glBegin(GL_LINE_STRIP);
+            glVertex2f(0, EK);
+            glVertex2f(MembraneVoltageGraph::MAX_GRAPH_INDEX, EK);
+            glEnd();
+
             glColor3f(1, 1, 0);
             glBegin(GL_LINE_STRIP);
-            for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-            {
-                glVertex2f((double) i, (membraneVoltageValues[i] - comparisonVoltageValues[i]) *100000);
-            }
+            glVertex2f(0, EL);
+            glVertex2f(MembraneVoltageGraph::MAX_GRAPH_INDEX, EL);
             glEnd();
         }
-
-
-        if (drawEquilibrumVoltages)
+        else
         {
-            if (Tc == Simulation::referenceTemperature)
-            {
-                glColor3f(1, 0, 0);
-                glBegin(GL_LINE_STRIP);
-                glVertex2f(0, ENa);
-                glVertex2f(MembraneVoltageGraph::MAX_GRAPH_INDEX, ENa);
-                glEnd();
-
-                glColor3f(1, 0.75, 0.25);
-                glBegin(GL_LINE_STRIP);
-                glVertex2f(0, EK);
-                glVertex2f(MembraneVoltageGraph::MAX_GRAPH_INDEX, EK);
-                glEnd();
-
-                glColor3f(1, 1, 0);
-                glBegin(GL_LINE_STRIP);
-                glVertex2f(0, EL);
-                glVertex2f(MembraneVoltageGraph::MAX_GRAPH_INDEX, EL);
-                glEnd();
-            }
-            else
-            {
-                glColor3f(1, 0, 0);
-                glBegin(GL_LINES);
-                for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-                {
-                    glVertex2f(i, ENa);
-                }
-                glEnd();
-
-                glColor3f(1, 0.75, 0.25);
-                glBegin(GL_LINES);
-                for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-                {
-                    glVertex2f(i, EK);
-                }
-                glEnd();
-
-                glColor3f(1, 1, 0);
-                glBegin(GL_LINES);
-                for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-                {
-                    glVertex2f(i, EL);
-                }
-                glEnd();
-            }
-        }
-
-		glPopMatrix();
-
-		glColor3f(graphColor->r, graphColor->g, graphColor->b);
-
-		sprintf(text, "%d, Membrane Voltage: %.12Lf", spikeCount, membraneVoltage);
-		GraphicsAndUI::DrawTextStr(text, MembraneVoltageGraph::MAX_GRAPH_INDEX + MembraneVoltageGraph::MAX_GRAPH_INDEX/10, 0, 0.0, 0.5);
-
-		sprintf(text, "synStimulus: %.12Lf", synStimulus);
-		GraphicsAndUI::DrawTextStr(text, MembraneVoltageGraph::MAX_GRAPH_INDEX + MembraneVoltageGraph::MAX_GRAPH_INDEX/10, -100, 0.0, 0.5);
-
-		if (drawGatingVariables)
-        {
-            glPushMatrix();
-            glScalef(1, 100, 1);
-
-            glColor3f(0, 1, 0);
-            glBegin(GL_LINE_STRIP);
-            for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-            {
-                glVertex2f(i, mValues[i]);
-            }
-            glEnd();
-
-
-            glColor3f(0, 0, 1);
-            glBegin(GL_LINE_STRIP);
-            for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-            {
-                glVertex2f(i, nValues[i]);
-            }
-            glEnd();
-
-            glColor3f(1, 0, 1);
-            glBegin(GL_LINE_STRIP);
-            for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-            {
-                glVertex2f(i, hValues[i]);
-            }
-            glEnd();
-
-            glPopMatrix();
-        }
-
-        if (drawCurrents)
-        {
-            glScalef(1, 0.1, 1);
-
             glColor3f(1, 0, 0);
             glBegin(GL_LINES);
             for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
             {
-                glVertex2f(i, graph_NaCurrent[i]);
+                glVertex2f(i, ENa);
             }
             glEnd();
 
@@ -697,7 +584,7 @@ long double HH_Neuron::AdjustTemperature()
             glBegin(GL_LINES);
             for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
             {
-                glVertex2f(i, graph_KCurrent[i]);
+                glVertex2f(i, EK);
             }
             glEnd();
 
@@ -705,38 +592,111 @@ long double HH_Neuron::AdjustTemperature()
             glBegin(GL_LINES);
             for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
             {
-                glVertex2f(i, graph_LCurrent[i]);
-            }
-            glEnd();
-
-
-            glScalef(1, 10, 1);
-            glColor3f(0, 1, 0);
-            glBegin(GL_LINES);
-            for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
-            {
-                glVertex2f(i, graph_NaCurrent[i] + graph_KCurrent[i] + graph_LCurrent[i]);
+                glVertex2f(i, EL);
             }
             glEnd();
         }
-
-		glPopMatrix();
     }
 
-    void HH_Neuron::ResetHH()
+	glPopMatrix();
+
+	glColor3f(graphColor->r, graphColor->g, graphColor->b);
+
+	sprintf(text, "%d, Membrane Voltage: %.12Lf", spikeCount, membraneVoltage);
+	GraphicsAndUI::DrawTextStr(text, MembraneVoltageGraph::MAX_GRAPH_INDEX + MembraneVoltageGraph::MAX_GRAPH_INDEX/10, 0, 0.0, 0.5);
+
+	sprintf(text, "synStimulus: %.12Lf", synStimulus);
+	GraphicsAndUI::DrawTextStr(text, MembraneVoltageGraph::MAX_GRAPH_INDEX + MembraneVoltageGraph::MAX_GRAPH_INDEX/10, -100, 0.0, 0.5);
+
+	if (drawGatingVariables)
     {
-        membraneVoltage = -66.548431611267787;
-        m = 0.044029298256692072;
-        h = 0.64902711752519804;
-        n = 0.30234115639914516;
+        glPushMatrix();
+        glScalef(1, 100, 1);
 
-        SetTargetTemperature(Simulation::referenceTemperature);
-        Tk = targetTk;
+        glColor3f(0, 1, 0);
+        glBegin(GL_LINE_STRIP);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
+        {
+            glVertex2f(i, mValues[i]);
+        }
+        glEnd();
+
+        glColor3f(0, 0, 1);
+        glBegin(GL_LINE_STRIP);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
+        {
+            glVertex2f(i, nValues[i]);
+        }
+        glEnd();
+
+        glColor3f(1, 0, 1);
+        glBegin(GL_LINE_STRIP);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
+        {
+            glVertex2f(i, hValues[i]);
+        }
+        glEnd();
+
+        glPopMatrix();
     }
 
-    void HH_Neuron::ResetSpikeCounts()
+    if (drawCurrents)
     {
-        spikeCount =0;
+        glScalef(1, 0.1, 1);
+
+        glColor3f(1, 0, 0);
+        glBegin(GL_LINES);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
+        {
+            glVertex2f(i, graph_NaCurrent[i]);
+        }
+        glEnd();
+
+        glColor3f(1, 0.75, 0.25);
+        glBegin(GL_LINES);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
+        {
+            glVertex2f(i, graph_KCurrent[i]);
+        }
+        glEnd();
+
+        glColor3f(1, 1, 0);
+        glBegin(GL_LINES);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
+        {
+            glVertex2f(i, graph_LCurrent[i]);
+        }
+        glEnd();
+
+
+        glScalef(1, 10, 1);
+        glColor3f(0, 1, 0);
+        glBegin(GL_LINES);
+        for(uint32_t i = 0; i < MembraneVoltageGraph::MAX_GRAPH_INDEX; i++)
+        {
+            glVertex2f(i, graph_NaCurrent[i] + graph_KCurrent[i] + graph_LCurrent[i]);
+        }
+        glEnd();
     }
 
-    double HH_Neuron::MINMAX_VOLTAGE = 125.0;
+	glPopMatrix();
+}
+
+void HH_Neuron::ResetHH()
+{
+    //these values were determined to be stable equilibrium values, running the simulation without stimulus
+    membraneVoltage = -66.548431611267787;
+    m = 0.044029298256692072;
+    h = 0.64902711752519804;
+    n = 0.30234115639914516;
+
+    SetTargetTemperature(Simulation::referenceTemperature);
+    Tk = targetTk;
+}
+
+void HH_Neuron::ResetSpikeCounts()
+{
+    spikeCount =0;
+}
+
+double HH_Neuron::MINMAX_VOLTAGE = 125.0;

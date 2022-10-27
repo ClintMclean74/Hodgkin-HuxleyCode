@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef FITNESS_GRAPH_H
@@ -38,9 +38,8 @@ class SeriesInformation
 class Graph
 {
     private:
-        uint32_t rollingAvgRange = 0; //number of deltas for specified milliseconds
+        uint32_t rollingAvgRange = 0;
 
-        ////uint32_t MAX_SERIES = HH_NeuralNetworks::NETWORKS_COLUMNS * HH_NeuralNetworks::NETWORKS_ROWS + 1;
         uint32_t MAX_SERIES = 200;
 
         static const uint32_t colorsCount = 1020;
@@ -72,7 +71,7 @@ class Graph
         static const uint32_t MARGIN_X = 30;
         static const uint32_t MARGIN_Y = 10;
 
-        static const uint32_t MAX_INDEX = 60000;
+        static uint32_t MAX_INDEX;
 
         uint32_t* currentIndexes;
         uint32_t currentIndex = 0;
@@ -81,8 +80,12 @@ class Graph
         double yScale = 10;
         double xScale = 30;
 
+        static double yTemperatureScale;
+
         uint32_t yLabels = 11;
         double yLabelInc = 10;
+        bool drawyLabels = true;
+        bool drawxLabels = true;
 
         bool drawValues = true;
         bool drawAverage = false;

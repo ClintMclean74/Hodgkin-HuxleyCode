@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <math.h>
@@ -243,28 +243,6 @@ void Agent::ActivateNeuronsFromFoodAngle()
         ((HH_NeuralNetwork*) neuralNetwork)->ClearQ();
 }
 
-/*////void Agent::WriteToAgentLog()
-{
-    sprintf(textBuffer, "Simulation Time: %f", Simulation::generationTime);
-    uint32_t length = strlen(textBuffer);
-    fwrite(textBuffer, sizeof(char), length, agentLog);
-    fwrite("\n", sizeof(char), 1, agentLog);
-
-    sprintf(textBuffer, "This Agent Generation Time: %f", generationTime);
-    length = strlen(textBuffer);
-    fwrite(textBuffer, sizeof(char), length, agentLog);
-    fwrite("\n", sizeof(char), 1, agentLog);
-
-    fwrite(currentStimulus, sizeof(char), strlen(currentStimulus), agentLog);
-    fwrite("\n", sizeof(char), 1, agentLog);
-
-    resultStr = ((HH_NeuralNetwork*) neuralNetwork)->neurons->GetStringFromResult(((HH_NeuralNetwork*) neuralNetwork)->neurons->layers-1);
-
-    fwrite(resultStr, sizeof(char), strlen(resultStr), agentLog);
-    fwrite("\n", sizeof(char), 1, agentLog);
-    fflush(agentLog);
-}*/
-
 //ProcessResult(): processes the final layer neural activation pattern, adds the
 //stimulus, result and action mappings to buffers, determines the effect on fitness (errors) for training and also writes to the agent logs
 uint32_t Agent::ProcessResult()
@@ -382,93 +360,6 @@ uint32_t Agent::ProcessResult()
 
     GetSpikeCountArraysForLayers(spikeCountsArrays);
 
-    /*////if (Simulation::stimulus)
-    {
-        if (Simulation::findStimulusValue)
-        {
-            if (index == 0)
-            {
-                if (((HH_NeuralNetwork*) neuralNetwork)->GetTotalSpikeCount() == 0)
-                {
-                    Simulation::stimulusFound = false;
-
-                    Simulation::minStimulusValue = Simulation::stimulusValue;
-                    Simulation::stimulusValue = (Simulation::maxStimulusValue + Simulation::stimulusValue) / 2;
-                }
-                else
-                {
-                    Simulation::stimulusFound = true;
-                }
-            }
-            else
-            {
-                if (((HH_NeuralNetwork*) neuralNetwork)->GetTotalSpikeCount() > 0)
-                {
-                    if (Simulation::findStimulusValue)
-                    {
-                        Simulation::stimulusFound = false;
-
-                        Simulation::maxStimulusValue = Simulation::stimulusValue;
-                        Simulation::stimulusValue = (Simulation::minStimulusValue + Simulation::stimulusValue) / 2;
-                    }
-                }
-                else
-                {
-                    Simulation::stimulusFound = true;
-                }
-            }
-        }
-
-        if (Simulation::findWeightValue)
-        {
-            if (index == 0)
-            {
-                if (((HH_NeuralNetwork*) neuralNetwork)->GetSpikeCountsForLayer(1) == 0)
-                {
-                    Simulation::weightFound = false;
-
-                    Simulation::minWeightValue = Simulation::weightValue;
-
-                    if (Simulation::weightValue == Simulation::maxWeightValue)
-                    {
-                        Simulation::maxWeightValue = Simulation::maxWeightValue * 2;
-                        Simulation::weightValue = Simulation::maxWeightValue;
-                    }
-                    else
-                        Simulation::weightValue = (Simulation::maxWeightValue + Simulation::weightValue) / 2;
-                }
-                else
-                {
-                    Simulation::weightFound = true;
-                }
-            }
-            else
-            {
-                if (((HH_NeuralNetwork*) neuralNetwork)->GetSpikeCountsForLayer(1) > 0)
-                {
-                    if (Simulation::findWeightValue)
-                    {
-                        Simulation::weightFound = false;
-                        Simulation::maxWeightValue = Simulation::weightValue;
-
-                        if (Simulation::weightValue == Simulation::minWeightValue)
-                        {
-                            Simulation::minWeightValue = Simulation::minWeightValue / 2;
-                            Simulation::weightValue = Simulation::minWeightValue;
-                        }
-                        else
-                            Simulation::weightValue = (Simulation::minWeightValue + Simulation::weightValue) / 2;
-                    }
-                }
-            }
-
-            ((HH_NeuralNetwork*) neuralNetwork)->neurons->SetSynapseConductance(Simulation::weightValue);
-        }
-
-        ((HH_NeuralNetwork*) neuralNetwork)->ResetHH();
-    }
-    */
-
     ((HH_NeuralNetwork*) neuralNetwork)->ResetSpikeCounts();
 }
 
@@ -484,10 +375,6 @@ uint32_t Agent::Process(bool startInputStimulus)
     if (generationTime >= resetHHTime && generationTime < resetHHTime + Simulation::resetHHDuration)
     {
         processingStatus = ProcessingStatus::ResettingHH;
-
-        /*////if (prevProcessingStatus != ProcessingStatus::ResettingHH)
-            ((HH_NeuralNetwork*) neuralNetwork)->ResetHH();
-            */
     }
     else //stimulating the first layer, sensory neurons
         if (generationTime >= resetHHTime + Simulation::resetHHDuration && generationTime < resetHHTime + Simulation::resetHHDuration + Simulation::stimDuration)
@@ -503,12 +390,6 @@ uint32_t Agent::Process(bool startInputStimulus)
             else //now process the final layer activations
                 if (generationTime >= resetHHTime + Simulation::resetHHDuration + Simulation::synapticStimulusIntervalFromStimStart)
                 {
-                    /*////
-                    ProcessResult();
-                    status = 1;
-                    resetHHTime = generationTime;
-                    */
-
                     processingStatus = ProcessingStatus::ProcessedResult;
                 }
 
@@ -590,7 +471,8 @@ uint32_t Agent::Process(bool startInputStimulus)
     }
 
     if (Simulation::lag > 0)//use a lag to slow the simulation to check data
-        Sleep(Simulation::lag);
+        if (generationTime >= resetHHTime + Simulation::resetHHDuration)
+            Sleep(Simulation::lag);
 
     return status;
 }
@@ -624,7 +506,6 @@ void Agent::Draw()
         glVertex3f(posAngle->pos.x, posAngle->pos.y, posAngle->pos.z);
         newPos = posAngle->pos + posAngle->angle * velocity;
         glVertex3f(newPos.x, newPos.y, newPos.z);
-        ////glVertex3f(posAngle->pos.x, posAngle->pos.y, posAngle->pos.z);
 
         traceList->Next();
         posAngle = (PosAngle *) traceList->GetCurrent();

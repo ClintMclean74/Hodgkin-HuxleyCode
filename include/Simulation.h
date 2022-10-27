@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef SIMULATION_H
@@ -69,8 +69,8 @@ class Simulation
         static char agentSaveLogFolder[255];
 
         const static uint32_t MAX_STIMULUS_ARRAY_COUNT = 1000;
-        static double rfTemperaturePulseDurations[MAX_STIMULUS_ARRAY_COUNT];
-        static double rfTemperaturePulseIntervals[MAX_STIMULUS_ARRAY_COUNT];
+        static long double rfTemperaturePulseDurations[MAX_STIMULUS_ARRAY_COUNT];
+        static long double rfTemperaturePulseIntervals[MAX_STIMULUS_ARRAY_COUNT];
         static uint32_t nextStimulusIndex;
         static uint32_t rfTemperaturePulseSequenceCount;
         static uint32_t maxRFTemperaturePulseBeforeReset;
@@ -79,6 +79,7 @@ class Simulation
 
         static double lag;
         static bool stimulus;
+        static bool resetTraining;
         static bool training;
         static bool testingLayerErrors;
         static bool loadingData;
@@ -92,6 +93,11 @@ class Simulation
         const static uint32_t MAX_NEURAL_NETWORKS = 1000;
         static long double rfInducedTemperaturesFromPulsesForAgents[MAX_NEURAL_NETWORKS];
         static uint32_t rfInducedTemperaturesFromPulsesForAgentsCount;
+
+        static long double MAX_NEURAL_NOISE;
+
+        static uint32_t agentsWithoutNoise[MAX_NEURAL_NETWORKS];
+        static uint32_t agentsWithoutNoiseCount;
 
         static bool rfInducedIncTemperatureInstant;
         static bool rfInducedDecTemperatureInstant;

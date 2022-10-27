@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef _DEBUG
@@ -39,8 +39,6 @@ namespace MathUtilities
 			long double shiftValue = pow(10.0, (int) decimalPoints);
 
 			result = ((int32_t)((value * shiftValue)+0.5)) / shiftValue;
-
-			////result += 0.00000000000001; //fixes some floating point errors, i.e, 18.0 / 100.0
 
 			return result;
 		}

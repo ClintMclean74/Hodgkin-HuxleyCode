@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -37,12 +37,9 @@ Graph::Graph(Vector pos, uint32_t maxSeries)
     seriesInformation = new SeriesInformation[MAX_SERIES];
     currentIndexes = new uint32_t[MAX_SERIES];
 
-    ////rollingAvgRange = 10 /*ms*/ / Simulation::deltaTime; //number of deltas for specified milliseconds
-
     rollingAvgRange = 10 /*ms*/ / Simulation::deltaTime; //number of deltas for specified milliseconds
 
     rollingAvgRange /= Simulation::graphDataPointIntervalDeltas; //number of graph data points for deltas
-
 
     memset(graphTitle, 0, 255);
 
@@ -214,7 +211,6 @@ void Graph::CalculateStandardDeviationValues()
         avgValues[i] = totalValues[i] / seriesCount;
     }
 
-
     double totalDif = 0, dif, totalStandardDeviation = 0;
 
     for(uint32_t i = 0; i < currentIndexes[0]; i++)
@@ -223,7 +219,6 @@ void Graph::CalculateStandardDeviationValues()
 
         for(uint8_t j = 0; j < seriesCount; j++)
         {
-            ////dif = values[j][i] - (totalValues[i] / seriesCount);
             dif = values[j][i] - avgValues[i];
             totalDif += dif * dif;
         }
@@ -261,37 +256,41 @@ void Graph::Draw()
 	double x = -(double) Graph::MARGIN_X;
 	double y = 0;
 
-	for(uint8_t i = 0; i < yLabels; i++)
+	if (drawyLabels)
     {
-        sprintf(textBuffer, "%.0f", yLabelValue);
+        for(uint8_t i = 0; i < yLabels; i++)
+        {
+            sprintf(textBuffer, "%.0f", yLabelValue);
 
-        GraphicsAndUI::DrawTextStr(textBuffer, x, y * yScale, 0, 0.1, 0);
+            GraphicsAndUI::DrawTextStr(textBuffer, x, y * yScale, 0, 0.1, 0);
 
-        yLabelValue += yLabelInc;
-        y += yLabelInc;
+            yLabelValue += yLabelInc;
+            y += yLabelInc;
+        }
     }
 
-
-    uint32_t xLabels = 100;
-	double xLabelInc = 1;
-	double xLabelValue = 0;
-
-	x = 0;
-	y = -(double) Graph::MARGIN_Y;
-
-	for(uint8_t i = 0; i < xLabels; i++)
+    if (drawxLabels)
     {
-        sprintf(textBuffer, "%.0f", xLabelValue);
+        uint32_t xLabels = 100;
+        double xLabelInc = 1;
+        double xLabelValue = 0;
 
-        GraphicsAndUI::DrawTextStr(textBuffer, x * xScale, y, 0, 0.1, 0);
+        x = 0;
+        y = -(double) Graph::MARGIN_Y;
 
-        xLabelValue += xLabelInc;
-        x += xLabelInc;
+        for(uint8_t i = 0; i < xLabels; i++)
+        {
+            sprintf(textBuffer, "%.0f", xLabelValue);
+
+            GraphicsAndUI::DrawTextStr(textBuffer, x * xScale, y, 0, 0.1, 0);
+
+            xLabelValue += xLabelInc;
+            x += xLabelInc;
+        }
     }
 
     glLineWidth(2);
     uint32_t colorIndex;
-
 
     double totalValues[MAX_INDEX];
     memset(totalValues, 0, MAX_INDEX * sizeof(double));
@@ -301,46 +300,43 @@ void Graph::Draw()
 
     if (drawValues)
     {
-    for(uint8_t j = 0; j < seriesCount; j++)
-    {
-        if (seriesColorsSet)
+        for(uint8_t j = 0; j < seriesCount; j++)
         {
-            colorIndex = j;
-            glColor3f(graphColors[colorIndex].r, graphColors[colorIndex].g, graphColors[colorIndex].b);
-        }
-        else
-            if (maxSeriesColorSet && j == seriesCount - 1)
-                glColor3f(maxSeriesColor.r, maxSeriesColor.g, maxSeriesColor.b);
-            else
+            if (seriesColorsSet)
             {
-                colorIndex = ((double) (MAX_SERIES - 1 - j)) / (MAX_SERIES - 1) * (colorsCount - 1);
+                colorIndex = j;
                 glColor3f(graphColors[colorIndex].r, graphColors[colorIndex].g, graphColors[colorIndex].b);
             }
+            else
+                if (maxSeriesColorSet && j == seriesCount - 1)
+                    glColor3f(maxSeriesColor.r, maxSeriesColor.g, maxSeriesColor.b);
+                else
+                {
+                    colorIndex = ((double) (MAX_SERIES - 1 - j)) / (MAX_SERIES - 1) * (colorsCount - 1);
+                    glColor3f(graphColors[colorIndex].r, graphColors[colorIndex].g, graphColors[colorIndex].b);
+                }
 
-        glBegin(GL_LINE_STRIP);
-        for(uint32_t i = 0; i < MAX_INDEX; i++)
-        {
-            glVertex2f(i * xScale, values[j][i] * yScale);
+            glBegin(GL_LINE_STRIP);
+            for(uint32_t i = 0; i < MAX_INDEX; i++)
+            {
+                glVertex2f(i * xScale, values[j][i] * yScale);
+            }
+            glEnd();
+
+            glColor3f(0, 1, 0);
         }
-        glEnd();
-
-
-        glColor3f(0, 1, 0);
-    }
     }
 
     for(uint8_t j = 0; j < seriesCount; j++)
         for(uint32_t i = 0; i < MAX_INDEX; i++)
         {
             totalValues[i] += values[j][i];
-
         }
 
-
-        for(uint32_t i = 0; i < MAX_INDEX; i++)
-        {
-            avgValues[i] = totalValues[i] / seriesCount;
-        }
+    for(uint32_t i = 0; i < MAX_INDEX; i++)
+    {
+        avgValues[i] = totalValues[i] / seriesCount;
+    }
 
     if (drawAverage && seriesCount>0)
     {
@@ -386,16 +382,16 @@ void Graph::Draw()
         glBegin(GL_LINE_STRIP);
         for(int32_t i = 0; i < MAX_INDEX; i++)
         {
-            rollingAvgStart = i - rollingAvgRange;
+            rollingAvgStart = (i - rollingAvgRange) + 1;
 
-                if (rollingAvgStart > 0)
-                    rollingAverageTotalForRange -= avgValues[rollingAvgStart -1];
+            if (rollingAvgStart > 0)
+                rollingAverageTotalForRange -= avgValues[rollingAvgStart - 1];
 
-                rollingAverageTotalForRange += avgValues[i];
+            rollingAverageTotalForRange += avgValues[i];
 
-                totalRollingAverage += avgValues[i];
+            totalRollingAverage += avgValues[i];
 
-                glVertex2f(i * xScale, rollingAverageTotalForRange / (i - rollingAvgStart) * yScale);
+            glVertex2f(i * xScale, rollingAverageTotalForRange / ((i - rollingAvgStart) + 1) * yScale);
         }
         glEnd();
     }
@@ -468,35 +464,32 @@ void Graph::Save(char *fileName, double resolution)
     uint32_t k = 0;
     for(uint8_t j = 0; j < seriesCount; j++)
     {
-        ////if (currentIndexes[j] > 0)
+        sprintf(textBuffer, "%s,", seriesInformation[j].seriesTitle);
+        length = strlen(textBuffer);
+        fwrite(textBuffer, sizeof(char), length, file);
+
+        if (currentIndexes[j] > maxIndex)
+            maxIndex = currentIndexes[j];
+
+        inc = currentIndexes[j] / (currentIndexes[j] * resolution);
+
+        k = 0;
+        for(uint32_t i = 0; i < currentIndexes[j]; i+=inc)
         {
-            sprintf(textBuffer, "%s,", seriesInformation[j].seriesTitle);
+            if (i > 0)
+            {
+                fwrite(",", sizeof(char), 1, file);
+            }
+
+            sprintf(textBuffer, "%f", values[j][i]);
             length = strlen(textBuffer);
             fwrite(textBuffer, sizeof(char), length, file);
 
-            if (currentIndexes[j] > maxIndex)
-                maxIndex = currentIndexes[j];
-
-            inc = currentIndexes[j] / (currentIndexes[j] * resolution);
-
-            k = 0;
-            for(uint32_t i = 0; i < currentIndexes[j]; i+=inc)
-            {
-                if (i > 0)
-                {
-                    fwrite(",", sizeof(char), 1, file);
-                }
-
-                sprintf(textBuffer, "%f", values[j][i]);
-                length = strlen(textBuffer);
-                fwrite(textBuffer, sizeof(char), length, file);
-
-                totalValues[k] += values[j][i];
-                k++;
-            }
-
-            fwrite("\n", sizeof(char), 1, file);
+            totalValues[k] += values[j][i];
+            k++;
         }
+
+        fwrite("\n", sizeof(char), 1, file);
     }
 
     for(uint32_t i = 0; i < k; i++)
@@ -504,24 +497,22 @@ void Graph::Save(char *fileName, double resolution)
         avgValues[i] = totalValues[i] / seriesCount;
     }
 
-    ////if (currentIndexes[0] > 0)
+
+    inc = maxIndex / (maxIndex * resolution);
+
+    fwrite("avg:,", sizeof(char), 5, file);
+    for(uint32_t i = 0; i < k; i++)
     {
-        inc = maxIndex / (maxIndex * resolution);
-
-        fwrite("avg:,", sizeof(char), 5, file);
-        for(uint32_t i = 0; i < k; i++)
+        if (i > 0)
         {
-            if (i > 0)
-            {
-                fwrite(",", sizeof(char), 1, file);
-            }
-
-            sprintf(textBuffer, "%f", avgValues[i]);
-            length = strlen(textBuffer);
-            fwrite(textBuffer, sizeof(char), length, file);
+            fwrite(",", sizeof(char), 1, file);
         }
-        fwrite("\n", sizeof(char), 1, file);
+
+        sprintf(textBuffer, "%f", avgValues[i]);
+        length = strlen(textBuffer);
+        fwrite(textBuffer, sizeof(char), length, file);
     }
+    fwrite("\n", sizeof(char), 1, file);
 
     if (calcStandardDeviation)
     {
@@ -550,8 +541,6 @@ void Graph::Save(char *fileName, double resolution)
         fwrite("\n", sizeof(char), 1, file);
     }
 
-
-
     if (drawRollingAverage && seriesCount > 0)
     {
         double value;
@@ -572,18 +561,18 @@ void Graph::Save(char *fileName, double resolution)
                 fwrite(",", sizeof(char), 1, file);
             }
 
-            rollingAvgStart = i - rollingAvgRangeRes;
+            rollingAvgStart = (i - rollingAvgRangeRes) + 1;
 
-                if (rollingAvgStart > 0)
-                    rollingAverageTotalForRange -= avgValues[rollingAvgStart -1];
+            if (rollingAvgStart > 0)
+                rollingAverageTotalForRange -= avgValues[rollingAvgStart - 1];
 
-                rollingAverageTotalForRange += avgValues[i];
+            rollingAverageTotalForRange += avgValues[i];
 
-                totalRollingAverage += avgValues[i];
+            totalRollingAverage += avgValues[i];
 
-                sprintf(textBuffer, "%f", rollingAverageTotalForRange / (i - rollingAvgStart));
-                length = strlen(textBuffer);
-                fwrite(textBuffer, sizeof(char), length, file);
+            sprintf(textBuffer, "%f", rollingAverageTotalForRange / ((i - rollingAvgStart) + 1));
+            length = strlen(textBuffer);
+            fwrite(textBuffer, sizeof(char), length, file);
         }
 
         fwrite("\n", sizeof(char), 1, file);
@@ -600,3 +589,5 @@ void Graph::ResetIndexes()
     }
 }
 
+uint32_t Graph::MAX_INDEX = 1000;
+double Graph::yTemperatureScale = 1000;

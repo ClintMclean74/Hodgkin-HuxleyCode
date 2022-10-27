@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef FOODFORAGENTS_H
@@ -43,7 +43,7 @@ class FoodForAgents
 
         FoodForAgents();
         FoodForAgents(uint32_t maxSize);
-        void GenerateAndSaveFoodPos();
+        void GenerateAndSaveFoodPosForAgents();
         void Add(Food *food, int32_t agentIndex = -1, Vector* pos = NULL);
         void SetFoodColor(Color color);
         double GetDistanceToFood(Vector pos, uint32_t closestFoodIndex);

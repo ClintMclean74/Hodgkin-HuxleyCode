@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <string.h>
@@ -64,17 +64,20 @@ void Simulation::LoadSettings(char* fileName)
 
         if (strstr(ptr, "training"))
         {
-            ptr = strtok(NULL, ":");
+            ptr = strtok(NULL, "\n");
 
             if (strstr(ptr, "true"))
                 Simulation::training = true;
             else
+            {
                 Simulation::training = false;
+                Simulation::resetTraining = false;
+            }
         }
         else
             if (strstr(ptr, "testingLayerErrors"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
                     Simulation::testingLayerErrors = true;
@@ -84,7 +87,7 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "nnAvgsTesting"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
                     Simulation::nnAvgsTesting = true;
@@ -94,14 +97,29 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "MAX_NEURAL_NOISE"))
             {
+                ptr = strtok(NULL, "\n");
+
+                Simulation::MAX_NEURAL_NOISE = atof(ptr);
+            }
+            else
+            if (strstr(ptr, "agentsWithoutNoise"))
+            {
                 ptr = strtok(NULL, ",");
 
-                HH_NeuralNetworks::MAX_NEURAL_NOISE = atof(ptr);
+                uint32_t i = 0;
+                while (ptr != NULL)
+                {
+                    Simulation::agentsWithoutNoise[i++] = atoi(ptr);
+
+                    ptr = strtok(NULL, ",");
+                }
+
+                Simulation::agentsWithoutNoiseCount = i;
             }
             else
             if (strstr(ptr, "referenceTemperature"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 Simulation::referenceTemperature = atof(ptr);
             }
@@ -113,7 +131,7 @@ void Simulation::LoadSettings(char* fileName)
                 uint32_t i = 0;
                 while (ptr != NULL)
                 {
-                    Simulation::rfTemperaturePulseDurations[i++] = atoi(ptr);
+                    Simulation::rfTemperaturePulseDurations[i++] = atof(ptr);
 
                     ptr = strtok(NULL, ",");
                 }
@@ -153,7 +171,7 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "rfInducedIncTemperatureInstant"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
                     Simulation::rfInducedIncTemperatureInstant = true;
@@ -163,7 +181,7 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "rfInducedDecTemperatureInstant"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
                     Simulation::rfInducedDecTemperatureInstant = true;
@@ -173,89 +191,81 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "maxRFTemperaturePulseBeforeReset"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 Simulation::maxRFTemperaturePulseBeforeReset = atoi(ptr);
             }
             else
             if (strstr(ptr, "averagingPulseSequencesResults"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
+                {
                     Simulation::averagingPulseSequencesResults = true;
+                    Graph::MAX_INDEX=60000;
+                }
                 else
+                {
                     Simulation::averagingPulseSequencesResults = false;
+                    Graph::MAX_INDEX=1000;
+                }
             }
             else
             if (strstr(ptr, "synapticStimulusIntervalFromStimStart"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 Simulation::synapticStimulusIntervalFromStimStart = atoi(ptr);
             }
             else
-            if (strstr(ptr, "NETWORKS_ROWS"))
-            {
-                ptr = strtok(NULL, ",");
-
-                HH_NeuralNetworks::NETWORKS_ROWS = atoi(ptr);
-            }
-            else
-            if (strstr(ptr, "NETWORKS_COLUMNS"))
-            {
-                ptr = strtok(NULL, ",");
-
-                HH_NeuralNetworks::NETWORKS_COLUMNS = atoi(ptr);
-            }
-            else
             if (strstr(ptr, "layer1Length"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 HH_NeuralNetwork::layer1Length = atoi(ptr);
             }
             else
             if (strstr(ptr, "hiddenLayerLength"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 HH_NeuralNetwork::hiddenLayerLength = atoi(ptr);
             }
             else
             if (strstr(ptr, "resultLayerLength"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 HH_NeuralNetwork::resultLayerLength = atoi(ptr);
             }
             else
             if (strstr(ptr, "LAYERS"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 HH_NeuralNetwork::LAYERS = atoi(ptr);
             }
             else
             if (strstr(ptr, "saveRootFolder"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::saveRootFolder, ptr);
-                Simulation::saveRootFolder[strlen(Simulation::saveRootFolder)-1]=0;
+                Simulation::saveRootFolder[strlen(Simulation::saveRootFolder)]=0;
             }
             else
             if (strstr(ptr, "saveFittestNNFolder"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::saveFittestNNFolder, ptr);
-                Simulation::saveFittestNNFolder[strlen(Simulation::saveFittestNNFolder)-1]=0;
+                Simulation::saveFittestNNFolder[strlen(Simulation::saveFittestNNFolder)]=0;
             }
             else
             if (strstr(ptr, "saveAgentAllMembraneVoltagesTrace"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
                     Simulation::saveAgentAllMembraneVoltagesTrace = true;
@@ -265,96 +275,96 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "saveAgentAllMembraneVoltagesFolder"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::saveAgentAllMembraneVoltagesFolder, ptr);
-                Simulation::saveAgentAllMembraneVoltagesFolder[strlen(Simulation::saveAgentAllMembraneVoltagesFolder)-1]=0;
+                Simulation::saveAgentAllMembraneVoltagesFolder[strlen(Simulation::saveAgentAllMembraneVoltagesFolder)]=0;
             }
             else
             if (strstr(ptr, "loadAgentAllMembraneVoltagesFolder"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::loadAgentAllMembraneVoltagesFolder, ptr);
-                Simulation::loadAgentAllMembraneVoltagesFolder[strlen(Simulation::loadAgentAllMembraneVoltagesFolder)-1]=0;
+                Simulation::loadAgentAllMembraneVoltagesFolder[strlen(Simulation::loadAgentAllMembraneVoltagesFolder)]=0;
             }
             else
             if (strstr(ptr, "saveMembraneVoltagesTraceGraphFolder"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::saveMembraneVoltagesTraceGraphFolder, ptr);
-                Simulation::saveMembraneVoltagesTraceGraphFolder[strlen(Simulation::saveMembraneVoltagesTraceGraphFolder)-1]=0;
+                Simulation::saveMembraneVoltagesTraceGraphFolder[strlen(Simulation::saveMembraneVoltagesTraceGraphFolder)]=0;
             }
             else
             if (strstr(ptr, "saveMembraneVoltagesTraceGraphTime"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 Simulation::saveMembraneVoltagesTraceGraphTime = atoi(ptr);
             }
             else
             if (strstr(ptr, "saveResultGraphsFolder"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::saveResultGraphsFolder, ptr);
-                Simulation::saveResultGraphsFolder[strlen(Simulation::saveResultGraphsFolder)-1]=0;
+                Simulation::saveResultGraphsFolder[strlen(Simulation::saveResultGraphsFolder)]=0;
             }
             else
             if (strstr(ptr, "agentSaveLogFolder"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::agentSaveLogFolder, ptr);
-                Simulation::agentSaveLogFolder[strlen(Simulation::agentSaveLogFolder)-1]=0;
+                Simulation::agentSaveLogFolder[strlen(Simulation::agentSaveLogFolder)]=0;
             }
             else
             if (strstr(ptr, "stimulusValue"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 Simulation::stimulusValue = atof(ptr);
             }
             else
             if (strstr(ptr, "foodRightStimulus"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::foodRightStimulus, ptr);
             }
             else
             if (strstr(ptr, "foodForwardStimulus"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::foodForwardStimulus, ptr);
             }
             else
             if (strstr(ptr, "foodLeftStimulus"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 strcpy(Simulation::foodLeftStimulus, ptr);
             }
             else
             if (strstr(ptr, "resetHHDuration"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 Simulation::resetHHDuration = atoi(ptr);
             }
             else
             if (strstr(ptr, "stimDuration"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 Simulation::stimDuration = atoi(ptr);
             }
             else
             if (strstr(ptr, "setWeightValue"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
                     Simulation::setWeightValue = true;
@@ -364,7 +374,7 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "weightValue"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
 
                 Simulation::weightValue = atof(ptr);
             }
@@ -377,7 +387,7 @@ void Simulation::LoadSettings(char* fileName)
                 ptr = strtok(NULL, ",");
                 GraphicsAndUI::pos.y = atof(ptr);
 
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
                 GraphicsAndUI::pos.z = atof(ptr);
 
                 GraphicsAndUI::originalViewPos = GraphicsAndUI::pos;
@@ -385,7 +395,7 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "fov"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
                 GraphicsAndUI::fov = atof(ptr);
 
                 GraphicsAndUI::originalViewFov = GraphicsAndUI::fov;
@@ -393,13 +403,13 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "lag"))
             {
-                ptr = strtok(NULL, ",");
+                ptr = strtok(NULL, "\n");
                 Simulation::lag = atof(ptr);
             }
             else
             if (strstr(ptr, "nnVisible"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
                     GraphicsAndUI::nnVisible = true;
@@ -409,12 +419,19 @@ void Simulation::LoadSettings(char* fileName)
             else
             if (strstr(ptr, "connectionsVisible"))
             {
-                ptr = strtok(NULL, ":");
+                ptr = strtok(NULL, "\n");
 
                 if (strstr(ptr, "true"))
                     GraphicsAndUI::connectionsVisible = true;
                 else
                     GraphicsAndUI::connectionsVisible = false;
+            }
+            else
+            if (strstr(ptr, "randomSeed"))
+            {
+                ptr = strtok(NULL, "\n");
+
+                Simulation::randomSeed = atoi(ptr);
             }
     }
     fclose(settings);
@@ -457,7 +474,7 @@ bool CreatePath(std::string wsPath)
     //check if existing path
     attr = GetFileAttributes(wsPath.c_str());
 
-    if (attr == 0xFFFFFFFF) //doesn�t exist
+    if (attr == 0xFFFFFFFF) //doesn’t exist
     {
         pos = wsPath.find_last_of('\\');
         pos2 = wsPath.find_last_of('//');
@@ -477,9 +494,6 @@ bool CreatePath(std::string wsPath)
     }
     else if (attr != FILE_ATTRIBUTE_DIRECTORY)
     {  // object already exists, but is not a dir
-
-        //SetLastError(ERROR_FILE_EXISTS);
-
         result = false;
     }
 
@@ -517,19 +531,20 @@ void Simulation::Initialize(char* settingsFileName)
     Simulation::CreateFolders();
 
     Simulation::simStartRealTime = GetTickCount();
-    ////Simulation::randomSeed = Simulation::simStartRealTime;
-    Simulation::randomSeed = 1115289700;
+    if (Simulation::randomSeed == 0)
+        Simulation::randomSeed = Simulation::simStartRealTime;
+
     Simulation::randomGenerator.seed(Simulation::randomSeed); //seed the random number generator
     srand(Simulation::randomSeed);
 
     Simulation::agents = new Agents();
 
-    Environment::foodForAgents_ptr = new FoodForAgents();
-    Environment::foodForAgents_ptr->GenerateAndSaveFoodPos();
-
     Simulation::neuralNetworks = new HH_NeuralNetworks(Simulation::agents);
 
     Simulation::neuralNetworks->InitializeNNs("");
+
+    Environment::foodForAgents_ptr = new FoodForAgents();
+    Environment::foodForAgents_ptr->GenerateAndSaveFoodPosForAgents();
 
     HH_NeuralNetwork::LAYERS = Simulation::neuralNetworks->neuralNetworks[0]->layers;
 
@@ -540,7 +555,9 @@ void Simulation::Initialize(char* settingsFileName)
 
 void Simulation::SetCurrentRFStimulusDurationAndInterval()
 {
-    ////uint32_t stimulusIndex = (double) rand() / RAND_MAX * Simulation::rfTemperaturePulseDurationsArrayCount;
+    if (!Simulation::averagingPulseSequencesResults)
+        nextStimulusIndex = (double) rand() / RAND_MAX * Simulation::rfTemperaturePulseDurationsArrayCount;
+
     Simulation::currentRFStimulusDuration = Simulation::rfTemperaturePulseDurations[nextStimulusIndex];
     Simulation::currentRFStimulusInterval = Simulation::rfTemperaturePulseIntervals[nextStimulusIndex];
 
@@ -548,7 +565,6 @@ void Simulation::SetCurrentRFStimulusDurationAndInterval()
 
     if (Simulation::nextStimulusIndex >= Simulation::rfTemperaturePulseDurationsArrayCount)
         Simulation::nextStimulusIndex = 0;
-
 }
 
 Simulation::~Simulation()
@@ -559,11 +575,9 @@ double Simulation::generationTime = 0; //ms
 long double Simulation::deltaTime = 0.01; //ms
 double Simulation::totalSimTime = 0; //ms
 uint32_t Simulation::deltas = 0;
-////uint32_t Simulation::graphDataPointIntervalDeltas = 0.01 /*ms*/ / Simulation::deltaTime;
 uint32_t Simulation::graphDataPointIntervalDeltas = 1 /*ms*/ / Simulation::deltaTime;
 
-uint32_t Simulation::randomSeed;
-
+uint32_t Simulation::randomSeed = 0;
 
 //durations
 double Simulation::generationDurationEvolvingTraining = (Simulation::synapticStimulusIntervalFromStimStart + Simulation::resetHHDuration) * 3 + 2;
@@ -591,7 +605,10 @@ char Simulation::agentSaveLogFolder[] = "agent_logs";
 uint32_t Simulation::simStartRealTime;
 uint32_t Simulation::trainingGeneration = 0;
 long double Simulation::HH_SQUID_REFERENCE_TEMPERATURE = 6.3;
-long double Simulation::HH_SQUID_REFERENCE_TEMPERATURE_Q10_RATE = 3; //Q10 adjustment rate for temperatures
+
+//Hodgkin-Huxley Q10 adjustment rate for temperatures, stated their paper "A quantitative description of membrane current and its application to conduction and excitation in nerve"
+long double Simulation::HH_SQUID_REFERENCE_TEMPERATURE_Q10_RATE = 3;
+
 long double Simulation::referenceTemperature = Simulation::HH_SQUID_REFERENCE_TEMPERATURE;
 
 long double Simulation::gatingThresholdVoltage = -55;
@@ -611,11 +628,15 @@ bool Simulation::debugging = false;
 
 double Simulation::preSynapticaActivityVoltageThreshold = 20; //threshold for signaling to post synaptic neuron
 
-long double Simulation::TempIncRatePerSecond = 10;
+
+//An increasing temperature rate of 2 C/s is chosen, since 1 C/s to 10 C/s causes the microwave auditory effect that results in thermoelastic pressure waves and a heating rates of 0.001 C over 500 μs are also considered realistic exposures from transmissions that could result in neuropathological effects (Dagro et al, 2021)(Foster and Glaser, 2007)
+long double Simulation::TempIncRatePerSecond = 2; //2 degrees a second
 long double Simulation::TempIncRatePerDelta = Simulation::TempIncRatePerSecond / (1/Simulation::deltaTime * 1000); //rate per delta = inc rate per second / (deltas in a second = ((deltas in a ms) * (ms per second (1000))))
 
+//The temperature decreases at a rate of 0.001 C per millisecond, since temperature increases of ~10^-3 C should reach equilibrium in less than one millisecond:
+//"...the minuscule temperature increase of << 10 -3 K would reach equilibrium in less than one millisecond..." (Foster and Glaser 2007)
 long double Simulation::TempDecRatePerSecond = 1; //for 6.301 C to 6.3 C over 1 ms
-long double Simulation::TempDecRatePerDelta = Simulation::TempDecRatePerSecond / (1/Simulation::deltaTime * 1000); //rate per delta = inc rate per second / (deltas in a second = ((deltas in a ms) * (ms per second (1000))))
+long double Simulation::TempDecRatePerDelta = Simulation::TempDecRatePerSecond / (1/Simulation::deltaTime * 1000); //rate per delta = dec rate per second / (deltas in a second = ((deltas in a ms) * (ms per second (1000))))
 
 long double Simulation::stimulusValueInc = 0.01;
 
@@ -644,11 +665,12 @@ long double Simulation::stimDuration = 1;
 
 bool Simulation::nnAvgsTesting = false;
 
+bool Simulation::resetTraining = true;
 bool Simulation::training = false;
 bool Simulation::testingLayerErrors = false;
 
-double Simulation::rfTemperaturePulseDurations[] = {10, 7, 5, 3, 1};
-double Simulation::rfTemperaturePulseIntervals[] = {10, 7, 5, 3, 1};
+long double Simulation::rfTemperaturePulseDurations[] = {10, 7, 5, 3, 1};
+long double Simulation::rfTemperaturePulseIntervals[] = {10, 7, 5, 3, 1};
 
 uint32_t Simulation::nextStimulusIndex = 0;
 
@@ -663,6 +685,11 @@ long double Simulation::rfInducedTemperaturesFromPulsesForAgents[] = {16.3};
 uint32_t Simulation::rfInducedTemperaturesFromPulsesForAgentsCount = 1;
 bool Simulation::rfInducedIncTemperatureInstant = false;
 bool Simulation::rfInducedDecTemperatureInstant = false;
+
+long double Simulation::MAX_NEURAL_NOISE = 0;
+
+uint32_t Simulation::agentsWithoutNoise[] = {};
+uint32_t Simulation::agentsWithoutNoiseCount = 0;
 
 char* Simulation::stimulusArray[] = {};
 uint32_t Simulation::stimulusArrayLength = 0;
