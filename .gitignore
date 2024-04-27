@@ -6,3 +6,4 @@ git.txt
 *.exp
 **/debug
 **/release
+**/build

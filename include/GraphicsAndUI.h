@@ -25,7 +25,7 @@
 class GraphicsAndUI
 {
     public:
-        static char graphicsText[255];
+        static char graphicsText[10000];
 
         static Vector originalViewPos;
         static double originalViewFov;

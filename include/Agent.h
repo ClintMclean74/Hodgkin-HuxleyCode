@@ -54,7 +54,7 @@ class Agent
         uint32_t nextStimulusIndex = 0;
 
         FoodForAgents *foodForAgents_ptr;
-        char textBuffer[255];
+        char textBuffer[10000];
 
         Color agentColor;
         Color neuronActiveColor;
@@ -117,7 +117,7 @@ class Agent
         void Forward();
         void Rotate(double angle);
         void ActivateNeuronsFromFoodAngle();
-        uint32_t ProcessResult();
+        void ProcessResult();
         uint32_t Process(bool startInputStimulus);
         int32_t FoodAvailable();
         void EatFood(uint32_t closestFoodIndex);

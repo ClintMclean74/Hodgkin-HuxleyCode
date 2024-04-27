@@ -19,14 +19,13 @@
 
 #include <string.h>
 #include <time.h>
-#include <io.h>
-#include <sysinfoapi.h>
-#include <fileapi.h>
+#include <sys/stat.h>
 
 #include "Simulation.h"
 #include "Environment.h"
 #include "HH_NeuralNetwork.h"
 #include "GraphicsAndUI.h"
+#include "Compatibility.h"
 
 std::string trim(const std::string& str, const std::string& whitespace = " \t")
 {
@@ -46,11 +45,18 @@ Simulation::Simulation()
 
 void Simulation::LoadSettings(char* fileName)
 {
-    FILE* settings = fopen(fileName, "r");
+        FILE* settings = fopen(fileName, "r");
 
-    char textBuffer[255];
+    //FILE* settings = fopen("settings/anode_break_agents_nns_layer_testing.txt", "r");
+
+    if (settings == NULL) {
+        printf("Failed to open file: %s\n", fileName);
+        return;
+    }
+
+    char textBuffer[10000];
     char *ptr;
-    while (fgets(textBuffer, 9999, settings))
+    while (fgets(textBuffer, sizeof(textBuffer), settings))
     {
         ptr = strtok(textBuffer, ":");
 
@@ -445,9 +451,13 @@ void Simulation::LoadSettings(char* fileName)
     if (strlen(Simulation::foodLeftStimulus)==0)
         strcpy(Simulation::foodLeftStimulus, "100");
 
-    Simulation::stimulusArray[0] = Simulation::foodRightStimulus;
-    Simulation::stimulusArray[1] = Simulation::foodForwardStimulus;
-    Simulation::stimulusArray[2] = Simulation::foodLeftStimulus;
+    Simulation::stimulusArray[0] = new char[255];
+    Simulation::stimulusArray[1] = new char[255];
+    Simulation::stimulusArray[2] = new char[255];
+
+    strcpy(Simulation::stimulusArray[0], Simulation::foodRightStimulus);
+    strcpy(Simulation::stimulusArray[1], Simulation::foodForwardStimulus);
+    strcpy(Simulation::stimulusArray[2], Simulation::foodLeftStimulus);
 
     Simulation::stimulusArrayLength = 3;
 
@@ -471,29 +481,35 @@ bool CreatePath(std::string wsPath)
     if (pos + 1 == wsPath.length())  // last character is '/\'
         wsPath.resize(pos);
 
-    //check if existing path
-    attr = GetFileAttributes(wsPath.c_str());
+    struct stat st;
+    if (stat(wsPath.c_str(), &st) == -1) //doesn’t exist
+    {        
+                pos = wsPath.find_last_of('\\');
 
-    if (attr == 0xFFFFFFFF) //doesn’t exist
-    {
-        pos = wsPath.find_last_of('\\');
-        pos2 = wsPath.find_last_of('//');
+                pos2 = wsPath.find_last_of('//');
 
-        pos = std::max(pos, pos2);
+                pos = std::max(pos, pos2);
 
-        if (pos > 0)
-        {
-            // Create parent dirs:
-            std::string wsPath2 = wsPath.substr(0, pos);
+                if (pos > 0)
+                {
+                    // Create parent dirs:
+                    std::string wsPath2 = wsPath.substr(0, pos);
 
-            result = CreatePath(wsPath2);
-        }
-
-        //create folder
-        result = result && CreateDirectory(wsPath.c_str(), NULL);
-    }
-    else if (attr != FILE_ATTRIBUTE_DIRECTORY)
+                    result = CreatePath(wsPath2);
+                }
+                
+                //create folder
+                #ifdef _WIN32
+                    result = result && (_mkdir(wsPath.c_str()) == 0);
+                #elif __linux__                
+                    result = result && (mkdir(wsPath.c_str(), 0777) == 0);
+                #endif
+    }    
+    else if ((st.st_mode & S_IFMT) != S_IFDIR)
     {  // object already exists, but is not a dir
+
+        //SetLastError(ERROR_FILE_EXISTS);
+
         result = false;
     }
 
@@ -525,12 +541,13 @@ void Simulation::CreateFolders()
     CreatePath(folderFileName);
 }
 
+
 void Simulation::Initialize(char* settingsFileName)
 {
     Simulation::LoadSettings(settingsFileName);
     Simulation::CreateFolders();
 
-    Simulation::simStartRealTime = GetTickCount();
+    Simulation::simStartRealTime = Compatibility::GetTickCount();
     if (Simulation::randomSeed == 0)
         Simulation::randomSeed = Simulation::simStartRealTime;
 
@@ -691,7 +708,7 @@ long double Simulation::MAX_NEURAL_NOISE = 0;
 uint32_t Simulation::agentsWithoutNoise[] = {};
 uint32_t Simulation::agentsWithoutNoiseCount = 0;
 
-char* Simulation::stimulusArray[] = {};
+char* Simulation::stimulusArray[];
 uint32_t Simulation::stimulusArrayLength = 0;
 
 char Simulation::foodLeftStimulus[];
