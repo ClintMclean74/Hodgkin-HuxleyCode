@@ -30,11 +30,8 @@ class Food
         static double radius;
         Vector pos;
         Color color;
-
         int32_t agentIndex;
-
         static Color FoodDefaultColor;
-
         bool eaten = false;
 
         Food();

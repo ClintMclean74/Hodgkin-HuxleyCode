@@ -17,6 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cstring>
+
 #include "GraphicsAndUI.h"
 #include "GL/glew.h"
 #include "GL/glut.h"
@@ -24,6 +26,7 @@
 #include "Simulation.h"
 #include "Environment.h"
 #include "HH_NeuralNetworks.h"
+#include "Compatibility.h"
 
 GraphicsAndUI::GraphicsAndUI()
 {
@@ -326,7 +329,7 @@ void GraphicsAndUI::Render()
 
         glColor3f(1, 1, 1);
 
-        sprintf(graphicsText, "Generations: %i, Simulation Time: %f, Real Time: %i", Simulation::generations, Simulation::generationTime, (GetTickCount() - Simulation::simStartRealTime)/1000);
+        sprintf(graphicsText, "Generations: %i, Simulation Time: %f, Real Time: %i", Simulation::generations, Simulation::generationTime, (Compatibility::GetTickCount() - Simulation::simStartRealTime)/1000);
         GraphicsAndUI::DrawTextStr(graphicsText, -1500, textY, 0.0, 3.0);
         textY-=800;
 
@@ -340,7 +343,7 @@ void GraphicsAndUI::Render()
 
         sprintf(graphicsText, "Noise Level: %.16Lf", Simulation::MAX_NEURAL_NOISE);
         GraphicsAndUI::DrawTextStr(graphicsText, -1500, textY, 0.0, 3.0);
-        textY-=800;
+        textY-=800;        
 
         sprintf(graphicsText, "RF Induced Temperatures From Pulses:");
 
@@ -348,7 +351,7 @@ void GraphicsAndUI::Render()
         for (uint32_t i = 1; i<Simulation::agents->count; i++)
         {
             sprintf(temperatures, " %.16Lf", Simulation::rfInducedTemperaturesFromPulsesForAgents[i-1]);
-            strcat(graphicsText, temperatures);
+            std::strcat(graphicsText, temperatures); // Use 'std::strcat' instead of 'strcat'
         }
 
         GraphicsAndUI::DrawTextStr(graphicsText, -1500, textY, 0.0, 3.0);

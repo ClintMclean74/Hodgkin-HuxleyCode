@@ -151,7 +151,7 @@ long double NN_Connections::GetInhibitorySynapseConductance(void* neurons)
         }
     }
 
-    return totalInhibitorySynapseConductance;
+    return -totalInhibitorySynapseConductance; //return the abs value
 }
 
 long double NN_Connections::GetCurrentSignalingConductance(void* neurons, double maxSynapseConductanceForArea)

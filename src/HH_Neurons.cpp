@@ -18,10 +18,6 @@
  */
 
 #include <string.h>
-#include <sysinfoapi.h>
-#include <random>
-#include <chrono>
-
 #include "GL/glew.h"
 #include "GraphicsAndUI.h"
 #include "HH_Neurons.h"
@@ -29,6 +25,7 @@
 #include "HH_NeuralNetworks.h"
 #include "Simulation.h"
 #include "MathUtilities.h"
+#include "Compatibility.h"
 
 HH_Neurons::HH_Neurons(uint32_t layers, uint32_t* rowCountsForColumns, void* neuralNetwork)
 {
@@ -475,7 +472,7 @@ char* HH_Neurons::GetStringFromResult(uint32_t index)
 {
     for (uint32_t i=0; i<rowCountsForColumns[index]; i++)
     {
-        itoa(neurons[index][i].spikeCount, &resultStr[i], 10);
+        Compatibility::Itoa(neurons[index][i].spikeCount, &resultStr[i], 10);
     }
 
     return resultStr;
@@ -669,10 +666,14 @@ void HH_Neurons::ResetSpikeCounts()
 {
     for (uint32_t j=0; j<layers;j++)
         {
+            printf("rowCountsForColumns[%d] = %d\n", j, rowCountsForColumns[j]);
+
             for (uint32_t i=0; i<rowCountsForColumns[j];i++)
             {
                 neurons[j][i].ResetSpikeCounts();
             }
+
+            printf("rowCountsForColumns[%d] = %d\n", j, rowCountsForColumns[j]);
         }
 }
 

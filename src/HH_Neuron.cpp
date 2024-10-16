@@ -284,11 +284,11 @@ long double HH_Neuron::IncN()
 
 long double HH_Neuron::AdjustMembraneVoltage()
 {
-    naCurrent = maxSodiumConductanceForArea * m* (membraneVoltage - ENa) *m*m * h;
-    kCurrent = maxPotasiumConductanceForArea * n* (membraneVoltage - EK) *n*n*n;
-    lCurrent = maxLeakConductanceForArea * (membraneVoltage - EL);
+    naCurrent = maxSodiumConductanceForArea * h * m*m*m * (ENa - membraneVoltage);
+    kCurrent = maxPotasiumConductanceForArea * n*n*n*n * (EK - membraneVoltage);
+    lCurrent = maxLeakConductanceForArea * (EL - membraneVoltage);
 
-    long double derivativeVoltage = (synStimulus - (naCurrent + kCurrent + lCurrent)) / membrane_capacitance;
+    long double derivativeVoltage = (naCurrent + kCurrent + lCurrent + synStimulus) / membrane_capacitance;
 
     return membraneVoltage + derivativeVoltage * Simulation::deltaTime;
 }
@@ -365,17 +365,10 @@ void HH_Neuron::Process(double noise)
         if (connections.count > 0 && receivingPreSynapticStimulus) //get received stimulus (excitory and inhibitory)
         {
             totalExcitorySynapseConductance = connections.GetExcitorySynapseConductance(((HH_NeuralNetwork*)neuralNetwork)->neurons->neurons);
-            excitorySynapseCurrent = -totalExcitorySynapseConductance * GNa_Max_Synapse * (membraneVoltage - ENa);
+            excitorySynapseCurrent = totalExcitorySynapseConductance * GNa_Max_Synapse * (ENa - membraneVoltage);
 
             totalInhibitorySynapseConductance = connections.GetInhibitorySynapseConductance(((HH_NeuralNetwork*)neuralNetwork)->neurons->neurons);
-            inhibitorySynapseCurrent = totalInhibitorySynapseConductance * GCl_Max_Synapse * (membraneVoltage - EL);//EK closer to resting membrane voltage so driving voltage far less than ENa, synapticSignalingConductance then would have to be greater negative
-
-            ////Note inverted (-totalExcitorySynapseConductance ) because (membraneVoltage - ENa) should be negative = positive charge flowing into cell. This increases mV so stimulus should be +
-            //// if (membraneVoltage - EL) = + = negative charge flowing out of cell. This decreases mV so stimulus should be - and totalInhibitorySynapseConductance < 0 so works
-            //// also, although negative VGC current = a + charge flowing into the cell
-            //// and a positive VGC current = + charge flowing out of cell
-            //// a positive stimulus though = flowing into cell
-
+            inhibitorySynapseCurrent = totalInhibitorySynapseConductance * GCl_Max_Synapse * (EL - membraneVoltage);//EL closer to resting membrane voltage so driving voltage far less than ENa, GCl_Max_Synapse adjusted to create biological realism (balanced activations and deactivations) equivalent to increased receptor distributions...etc        
 
             synStimulus = excitorySynapseCurrent + inhibitorySynapseCurrent;
 
@@ -546,7 +539,6 @@ void HH_Neuron::Draw(double maxABSWeight, long double* comparisonVoltageValues)
         }
         glEnd();
     }
-
 
     if (drawEquilibrumVoltages)
     {

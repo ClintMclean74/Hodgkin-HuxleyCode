@@ -17,12 +17,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <windows.h>
 #include "Environment.h"
 #include "Agents.h"
 #include "MathUtilities.h"
 #include "HH_NeuralNetwork.h"
 #include "Simulation.h"
+#include "Compatibility.h"
 
 Agents::Agents()
 {
@@ -160,7 +160,7 @@ void Agents::Draw()
 void Agents::saveMembraneVoltagesTraceGraph()
 {
     char textBuffer[255];
-    uint32_t time = GetTickCount();
+    uint32_t time = Compatibility::GetTickCount();
 
     FILE* agentNNMembraneVoltageTraceFile;
     for(uint32_t i=0; i<count;i++)

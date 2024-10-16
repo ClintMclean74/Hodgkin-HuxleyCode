@@ -18,6 +18,7 @@
  */
 
 #include "RecurrentList.h"
+#include <cstddef>
 
 RecurrentList::RecurrentList(uint32_t size)
 {
