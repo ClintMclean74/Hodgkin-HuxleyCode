@@ -1,1 +1,0 @@
-Hodgkin_Huxley.exe nn_amplification_food_finding_ai_testing_6_3001C6_301C6_31C.txt
